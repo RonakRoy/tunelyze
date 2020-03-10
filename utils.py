@@ -44,6 +44,9 @@ def input_boolean(prompt):
             print("Sorry, but that input is invalid.")
 
 def input_sublist(prompt, l):
+    if len(l) == 0:
+        return []
+
     for i, e in enumerate(l):
         print("  [{}] {}".format(i, e))
     

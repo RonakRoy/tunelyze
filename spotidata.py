@@ -3,6 +3,7 @@ import yaml
 import os
 
 import api
+from api import FeatureType, FeatureFilter
 import utils
 
 with open('config.yml', 'r') as config_stream:
@@ -15,6 +16,7 @@ os.environ['SPOTIPY_CLIENT_ID'] = config['client_id']
 os.environ['SPOTIPY_CLIENT_SECRET'] = config['client_secret']
 os.environ['SPOTIPY_REDIRECT_URI'] = config['redirect_uri']
 
+username = config['username']
 scope = 'user-library-read playlist-read-private playlist-read-collaborative'
 
 print("="*25)
@@ -23,11 +25,7 @@ print("="*25)
 
 print("Welcome to spotidata! Let's learn some more about your music taste.")
 print()
-print("Before we get started, you'll need to grant me access to your Spotify account.")
-
-username = input("Enter your Spotify username to get connected (or just hit enter to use the one in config.yml): ")
-if username == "":
-    username = config['username']
+print("Before we get started, you'll need to grant me access to your Spotify account. I'm attempting to login to Spotify user {}.".format(username))
 
 with api.login(username, scope) as sp:
     print()
@@ -58,7 +56,7 @@ with api.login(username, scope) as sp:
 
     print("Song Title{d}Artists{d}Energy{d}Danceability{d}Key{d}Loudness{d}Mode{d}Speechiness{d}Acousticness{d}Instrumentalness{d}Liveness{d}Valence{d}Tempo".format(d=delim))
     for track in sp.get_tracks(use_saved_tracks, queried_albums, queried_playlists):
-        features = sp.get_features(track)
+        features = track.load_features(sp)
         print("{name}{d}{artists}{d}{features}".format(
             d = delim,
             name = track.name,
@@ -68,3 +66,19 @@ with api.login(username, scope) as sp:
                 delim
             )
         ))
+
+    print()
+    print()
+
+    # filters = {
+    #     FeatureType.DANCEABILITY: None,
+    #     FeatureType.ENERGY: None,
+    #     FeatureType.KEY: FeatureFilter(FeatureType.KEY, values=['A', 'C', 'E']),
+    #     FeatureType.MODE: None,
+    #     FeatureType.SPEECHINESS: FeatureFilter(FeatureType.SPEECHINESS, min_val=0.25, max_val=0.5),
+    #     FeatureType.ACOUTSTICNESS: None,
+    #     FeatureType.INSTRUMENTALNESS: None,
+    #     FeatureType.LIVENESS: None,
+    #     FeatureType.VALENCE: None,
+    #     FeatureType.TEMPO: None
+    # }

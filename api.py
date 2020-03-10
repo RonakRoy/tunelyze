@@ -1,3 +1,5 @@
+from enum import Enum
+
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
@@ -116,7 +118,49 @@ class Track(object):
         self.name = spotipy_track['name']
         self.artists = [Artist(spotipy_artist) for spotipy_artist in spotipy_track['artists']]
         self.id = spotipy_track['id']
+
+    def load_features(self, spotify_client):
+        self.features = spotify_client.get_features(self)
+
+        return self.features
+
+    def get_feature(self, feature_type):
+        if self.features == None:
+            raise
+
+        if   feature_type == FeatureType.DANCEABILITY:
+            return self.features.danceability
+        elif feature_type == FeatureType.ENERGY:
+            return self.features.energy
+        elif feature_type == FeatureType.KEY:
+            return self.features.key
+        elif feature_type == FeatureType.MODE:
+            return self.features.mode
+        elif feature_type == FeatureType.SPEECHINESS:
+            return self.features.speechiness
+        elif feature_type == FeatureType.ACOUTSTICNESS:
+            return self.features.acousticness
+        elif feature_type == FeatureType.INSTRUMENTALNESS:
+            return self.features.instrumentalness
+        elif feature_type == FeatureType.LIVENESS:
+            return self.features.liveness
+        elif feature_type == FeatureType.VALENCE:
+            return self.features.valence
+        elif feature_type == FeatureType.TEMPO:
+            return self.features.tempo
     
+    def satisfies_all(self, feature_filters):
+        for feature_filter in feature_filters:
+            if not feature_filter.is_satisfied_by(self):
+                return False
+        return True
+
+    def satisfies_any(self, feature_filters):
+        for feature_filter in feature_filters:
+            if feature_filter.is_satisfied_by(self):
+                return True
+        return False
+
     def __hash__(self):
         return hash(self.id)
     
@@ -125,6 +169,46 @@ class Track(object):
 
     def __str__(self):
         return "{} by {}".format(self.name, utils.get_english_list(self.artists))
+
+class FeatureType(Enum):
+    DANCEABILITY = (0, (0.0, 1.0))
+    ENERGY = (1, (0.0, 1.0))
+    KEY = (2, ['C', 'C#/D♭', 'D', 'D#/E♭', 'E', 'F', 'F#/G♭', 'G', 'G#/A♭', 'A', 'A#/B♭', 'B'])
+    LOUDNESS = (3, (-120.0, 0.0))
+    MODE = (3, ['minor', 'major'])
+    SPEECHINESS = (4, (0.0, 1.0))
+    ACOUTSTICNESS = (5, (0.0, 1.0))
+    INSTRUMENTALNESS = (6, (0.0, 1.0))
+    LIVENESS = (7, (0.0, 1.0))
+    VALENCE = (8, (0.0, 1.0))
+    TEMPO = (9, (0.0, 300.0))
+
+class FeatureFilter(object):
+    def __init__(self, feature_type, values=None, min_val=None, max_val=None):
+        self.feature_type = feature_type
+        if isinstance(feature_type.value[1], tuple):
+            if min_val > max_val or min_val < feature_type.value[1][0] or max_val > feature_type.value[1][1]:
+                raise
+            self.min_val = min_val
+            self.max_val = max_val
+        else:
+            for value in values:
+                if not value in feature_type.value[1]:
+                    raise
+            self.values = values
+    
+    def is_satisfied_by(self, track):
+        feature_val = track.get_feature(self.feature_type)
+        if isinstance(self.feature_type.value[1], tuple):
+            return feature_val >= self.min_val and feature_val <= self.max_val
+        else:
+            return feature_val in self.values
+
+    def __str__(self):
+        if isinstance(self.feature_type.value[1], tuple):
+            return "between {} and {}".format(self.min_val, self.max_val)
+        else:
+            return "one of {}".format(utils.get_english_list(self.values))
 
 class Features(object):
     def __init__(self, spotipy_features):
