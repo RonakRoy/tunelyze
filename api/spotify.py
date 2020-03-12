@@ -3,7 +3,7 @@ from enum import Enum
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
-import utils
+import api.utils as utils
 
 class login(object):
     def __init__(self, username, scope):
@@ -86,6 +86,19 @@ class SpotifyClient(object):
 
     def get_features(self, track):
         return Features(self.sp.audio_features(track.id)[0])
+
+    def get_tracks_that_satisfy_predicate(self, tracks, predicate):
+        for track in tracks:
+            if predicate(track):
+                yield track
+
+    def create_playlist(self, name, tracks):
+        track_list = []
+        for track in tracks:
+            track_list.append(track)
+
+        pl = sp.user_playlist_create(sp.current_user()['id'], name)
+        sp.user_playlist_add_tracks(pl['id'], track_list)
 
 class Artist(object):
     def __init__(self, spotipy_artist):

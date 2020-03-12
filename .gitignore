@@ -6,7 +6,7 @@ config.yml
 
 # Created by https://www.gitignore.io/api/code,linux,macos,python,windows
 ### Code ###
-.vscode/*
+.vscode/
 
 ### Linux ###
 *~
