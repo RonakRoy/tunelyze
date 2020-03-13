@@ -16,17 +16,34 @@ def input_sublist(prompt, l):
         print("  [{}] {}".format(i, e))
     
     while True:
-        raw_input = input(prompt + " (enter a list of numbers from 0 to {}, separated by spaces): ".format(len(l)-1))
-        inputs = raw_input.split()
+        rawinput = input(prompt + " (enter a comma-separated list of numbers and ranges. ranges are denoted start-end, inclusive. valid indecies and range endpoints are 0 to {}): ".format(len(l)-1))
+        inputs = rawinput.strip().split(',')
+        if inputs == ['']:
+            return []
+
         selections = []
 
         try:
             for e in inputs:
-                i = int(e)
-                if i >= len(l):
-                    raise
+                if '-' in e:
+                    bounds = e.split('-')
+                    if len(bounds) != 2:
+                        raise
 
-                selections.append(l[i])        
+                    low = int(bounds[0])
+                    high = int(bounds[1])
+
+                    if not low in range(0,len(l)) or not high in range(0,len(l)) or low > high:
+                        raise
+
+                    for i in range(low, high+1):
+                        selections.append(l[i])
+                else:
+                    i = int(e)
+                    if i >= len(l):
+                        raise
+
+                    selections.append(l[i])        
             return selections
         except:
             print("Sorry, but that input is invalid.")

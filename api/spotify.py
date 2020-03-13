@@ -93,12 +93,20 @@ class SpotifyClient(object):
                 yield track
 
     def create_playlist(self, name, tracks):
-        track_list = []
-        for track in tracks:
-            track_list.append(track)
+        pl = self.sp.user_playlist_create(self.sp.current_user()['id'], name)
 
-        pl = sp.user_playlist_create(sp.current_user()['id'], name)
-        sp.user_playlist_add_tracks(pl['id'], track_list)
+        batch_size = 80
+        
+        track_ids = []
+        for track in tracks:
+            track_ids.append(track.id)
+
+            if len(track_ids) >= batch_size:
+                self.sp.user_playlist_add_tracks(self.sp.current_user()['id'], pl['id'], track_ids)
+                track_ids = []
+
+        if len(track_ids) != 0:
+            self.sp.user_playlist_add_tracks(self.sp.current_user()['id'], pl['id'], track_ids)
 
 class Artist(object):
     def __init__(self, spotipy_artist):
@@ -147,6 +155,8 @@ class Track(object):
             return self.features.energy
         elif feature_type == FeatureType.KEY:
             return self.features.key
+        elif feature_type == FeatureType.LOUDNESS:
+            return self.features.loudness
         elif feature_type == FeatureType.MODE:
             return self.features.mode
         elif feature_type == FeatureType.SPEECHINESS:
