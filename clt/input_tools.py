@@ -16,7 +16,7 @@ def input_sublist(prompt, l):
         print("  [{}] {}".format(i, e))
     
     while True:
-        rawinput = input(prompt + " (enter a comma-separated list of numbers and ranges. ranges are denoted start-end, inclusive. valid indecies and range endpoints are 0 to {}): ".format(len(l)-1))
+        rawinput = input(prompt + " (enter a comma-separated list of numbers and ranges (ex: \'1,3,5-10\'), with valid indecies and range endpoint between 0 to {}, inclusive): ".format(len(l)-1))
         inputs = rawinput.strip().split(',')
         if inputs == ['']:
             return []

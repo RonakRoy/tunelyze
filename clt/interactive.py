@@ -55,7 +55,7 @@ with spotify.login(username, scope) as sp:
     #     FeatureType.KEY: FeatureFilter(FeatureType.KEY, values=['A', 'C', 'E']),
     #     FeatureType.MODE: None,
     #     FeatureType.SPEECHINESS: FeatureFilter(FeatureType.SPEECHINESS, min_val=0.25, max_val=0.5),
-    #     FeatureType.ACOUTSTICNESS: None,
+    #     FeatureType.ACOUSTICNESS: None,
     #     FeatureType.INSTRUMENTALNESS: None,
     #     FeatureType.LIVENESS: None,
     #     FeatureType.VALENCE: None,

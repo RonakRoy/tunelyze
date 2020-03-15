@@ -5,6 +5,22 @@ from spotipy.oauth2 import SpotifyClientCredentials
 
 import api.utils as utils
 
+def get_tracks_that_satisfy_predicate(tracks, predicate):
+    filtered_tracks = []
+    for track in tracks:
+        if predicate(track):
+            filtered_tracks.append(track)
+
+    return filtered_tracks
+
+def get_feature_values(tracks, feature_type):
+    values = []
+
+    for track in tracks:
+        values.append(track.get_feature(feature_type))
+
+    return values
+
 class login(object):
     def __init__(self, username, scope):
         self.username = username
@@ -87,11 +103,6 @@ class SpotifyClient(object):
     def get_features(self, track):
         return Features(self.sp.audio_features(track.id)[0])
 
-    def get_tracks_that_satisfy_predicate(self, tracks, predicate):
-        for track in tracks:
-            if predicate(track):
-                yield track
-
     def create_playlist(self, name, tracks):
         pl = self.sp.user_playlist_create(self.sp.current_user()['id'], name)
 
@@ -161,7 +172,7 @@ class Track(object):
             return self.features.mode
         elif feature_type == FeatureType.SPEECHINESS:
             return self.features.speechiness
-        elif feature_type == FeatureType.ACOUTSTICNESS:
+        elif feature_type == FeatureType.ACOUSTICNESS:
             return self.features.acousticness
         elif feature_type == FeatureType.INSTRUMENTALNESS:
             return self.features.instrumentalness
@@ -200,7 +211,7 @@ class FeatureType(Enum):
     LOUDNESS = (3, (-120.0, 0.0))
     MODE = (3, ['minor', 'major'])
     SPEECHINESS = (4, (0.0, 1.0))
-    ACOUTSTICNESS = (5, (0.0, 1.0))
+    ACOUSTICNESS = (5, (0.0, 1.0))
     INSTRUMENTALNESS = (6, (0.0, 1.0))
     LIVENESS = (7, (0.0, 1.0))
     VALENCE = (8, (0.0, 1.0))

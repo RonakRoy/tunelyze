@@ -4,7 +4,21 @@ config.yml
 ### spotipy ###
 .cache-*
 
-# Created by https://www.gitignore.io/api/code,linux,macos,python,windows
+# Created using https://www.gitignore.io/
+### JupyterNotebooks ###
+# gitignore template for Jupyter Notebooks
+# website: http://jupyter.org/
+
+*/.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# IPython
+profile_default/
+ipython_config.py
+
+# Remove previous ipynb_checkpoints
+#   git rm -r .ipynb_checkpoints/
+
 ### Code ###
 .vscode/
 
@@ -181,5 +195,3 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
-
-# End of https://www.gitignore.io/api/code,linux,macos,python,windows
