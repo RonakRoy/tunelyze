@@ -1,5 +1,5 @@
 """
-WSGI config for spotidata project.
+WSGI config for ronakroy project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'spotidata.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ronakroy.settings')
 
 application = get_wsgi_application()

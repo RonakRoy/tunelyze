@@ -74,19 +74,19 @@ class SpotifyClient(object):
 
         return albums 
 
-    def get_tracks(self, saved=True, albums=[], playlists=[]):
+    def get_tracks(self, saved=True, album_ids=[], playlist_ids=[]):
         tracks = set()
 
         if saved:
             for track in self.get_saved_tracks():
                 tracks.add(track)
 
-        for album in albums:
-            for track in self.get_album_tracks(album):
+        for album_id in album_ids:
+            for track in self.get_album_tracks(album_id):
                 tracks.add(track)
 
-        for playlist in playlists:
-            for track in self.get_playlist_tracks(playlist):
+        for playlist_id in playlist_ids:
+            for track in self.get_playlist_tracks(playlist_id):
                 tracks.add(track)
                 
         return tracks
@@ -94,11 +94,11 @@ class SpotifyClient(object):
     def get_saved_tracks(self):
         return self._get(50, self.sp.current_user_saved_tracks, lambda result_item : Track(result_item['track']))
 
-    def get_album_tracks(self, album):
-        return self._get(50, lambda limit, offset : self.sp.album_tracks(album.id, limit=limit, offset=offset), lambda result_item : Track(result_item))
+    def get_album_tracks(self, album_id):
+        return self._get(50, lambda limit, offset : self.sp.album_tracks(album_id, limit=limit, offset=offset), lambda result_item : Track(result_item))
 
-    def get_playlist_tracks(self, playlist):
-        return self._get(50, lambda limit, offset : self.sp.playlist_tracks(playlist.id, limit=limit, offset=offset), lambda result_item : Track(result_item['track']))
+    def get_playlist_tracks(self, playlist_id):
+        return self._get(50, lambda limit, offset : self.sp.playlist_tracks(playlist_id, limit=limit, offset=offset), lambda result_item : Track(result_item['track']))
 
     def get_features(self, track):
         return Features(self.sp.audio_features(track.id)[0])
@@ -127,14 +127,36 @@ class Artist(object):
     def __str__(self):
         return self.name
 
+    def to_dict(self):
+        return {
+            'type': 'artist',
+            'name': self.name,
+            'id': self.id
+        }
+
+    def json(self):
+        return json.dumps(self.to_dict())
+
 class Album(object):
     def __init__(self, spotipy_album):
         self.name = spotipy_album['name']
-        self.artists = [Artist(spotipy_artist) for spotipy_artist in spotipy_album['artists']]
         self.id = spotipy_album['id']
+        self.artists = [Artist(spotipy_artist) for spotipy_artist in spotipy_album['artists']]
     
     def __str__(self):
         return "{} by {}".format(self.name, utils.get_english_list(self.artists))
+
+    def to_dict(self):
+        return {
+            'type': 'album',
+            'name': self.name,
+            'id': self.id,
+            'artists': [artist.to_dict() for artist in self.artists],
+            'artists_str': utils.get_english_list([artist.name for artist in self.artists])
+        }
+
+    def json(self):
+        return json.dumps(self.to_dict())
 
 class Playlist(object):
     def __init__(self, spotipy_playlist):
@@ -145,11 +167,20 @@ class Playlist(object):
     def __str__(self):
         return self.name
 
+    def to_dict(self):
+        return {
+            'type': 'playlist',
+            'name': self.name,
+            'id': self.id,
+            'collab': self.collab
+        }
+
 class Track(object):
     def __init__(self, spotipy_track):
         self.name = spotipy_track['name']
-        self.artists = [Artist(spotipy_artist) for spotipy_artist in spotipy_track['artists']]
         self.id = spotipy_track['id']
+        self.artists = [Artist(spotipy_artist) for spotipy_artist in spotipy_track['artists']]
+        self.features = None
 
     def load_features(self, spotify_client):
         self.features = spotify_client.get_features(self)
@@ -203,6 +234,19 @@ class Track(object):
 
     def __str__(self):
         return "{} by {}".format(self.name, utils.get_english_list(self.artists))
+    
+    def to_dict(self):
+        return {
+            'type': 'track',
+            'name': self.name,
+            'id': self.id,
+            'artists': [artist.to_dict() for artist in self.artists],
+            'artists_str': utils.get_english_list([artist.name for artist in self.artists]),
+            'features': None if self.features == None else self.features.json()
+        }
+
+    def json(self):
+        return json.dumps(self.to_dict())
 
 class FeatureType(Enum):
     DANCEABILITY = (0, (0.0, 1.0))

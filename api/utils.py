@@ -1,5 +1,8 @@
 key_mapping = ['C', 'C#/D♭', 'D', 'D#/E♭', 'E', 'F', 'F#/G♭', 'G', 'G#/A♭', 'A', 'A#/B♭', 'B']
 
+def get_dict_list(l):
+    return [e.to_dict() for e in l]
+
 def get_english_list(l):
     length = len(l)
 

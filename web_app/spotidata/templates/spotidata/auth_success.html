@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>spotidata</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $.ajax({url: "../get_saved_albums/", success: function(result) {
+                $("#albums").html("");
+                albums = result["albums"];
+                for (var i = 0; i < albums.length; i++) {
+                    $("#albums").append(
+                        "<input type='checkbox' class='album' id='" + albums[i]["id"] + "'><b>" + albums[i]["name"] + "</b><br>" + albums[i]["artists_str"] + "</input><br>"
+                    );
+                }
+            }});
+            $.ajax({url: "../get_playlists/", success: function(result) {
+                $("#playlists").html("");
+                playlists = result["playlists"];
+                for (var i = 0; i < playlists.length; i++) {
+                    $("#playlists").append(
+                        "<input type='checkbox' class='playlist' id='" + playlists[i]["id"] + "'><b>" + playlists[i]["name"] + "</b></input><br>"
+                    );
+                }
+            }});
+
+            $("#load_tracks").click(function() {
+                saved = $("#saved_tracks").prop('checked');
+
+                album_ids = "";
+                $(".album").each(function(index) {
+                    if ($(this).prop('checked')) {
+                        album_ids += $(this).attr('id') + ",";
+                    }
+                });
+
+
+                playlist_ids = "";
+                $(".playlist").each(function(index) {
+                    if ($(this).prop('checked')) {
+                        playlist_ids += $(this).attr('id') + ",";
+                    }
+                });
+
+                $("#tracks").html("<i>Loading tracks...</i>")
+                $.ajax({url: "../get_tracks/?saved=" + saved + "&albums=" + album_ids + "&playlists=" + playlist_ids, success: function(result) {
+                    $("#tracks").html("")
+
+                    tracks = result["tracks"];
+                    for (var i = 0; i < tracks.length; i++) {
+                        $("#tracks").append(
+                            "<li><b>" + tracks[i]["name"] + "</b><br>" + tracks[i]["artists_str"] + "</li>"
+                        );
+                    }
+                }});
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <article id="main">
+            Login successful! <br>
+            <b>Display Name:</b> {{ name }} <br>
+            <b>ID:</b> {{ id }} <br>
+
+            <table>
+                <tr width="100%">
+                    <td width="33%" style="vertical-align: top;">
+                        <h2>Track Sources</h2>
+                        <h3>Saved Tracks</h3>
+                        <input type="checkbox" class="saved_tracks" id="saved_tracks">Include Saved Tracks</input>
+                        <h3>Saved Albums</h3>
+                        <div id="albums">
+                            <i>Loading saved albums...</i>
+                        </div>
+                        <h3>Playlists</h3>
+                        <div id="playlists">
+                            <i>Loading playlists...</i>
+                        </div>
+                    </td>
+                    <td width="67%" style="vertical-align: top;">
+                        <h2>Tracks</h2>
+                        <button id="load_tracks">Load tracks...</button>
+                        <div id="tracks">
+
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </article>
+    </div>
+</body>
+</html>
