@@ -5,7 +5,116 @@
     <title>spotidata</title>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
     <script>
+        function histogram(feature_name, features, tick_spacing, min, max, bin_size) {
+            Plotly.newPlot(feature_name + "_plot", [{
+                type: 'histogram',
+                x: features[feature_name],
+
+                xbins: {
+                    start: min,
+                    end: max,
+                    size: bin_size,
+                },
+                
+                marker: {
+                    line: {
+                        width: 1.0
+                    }
+                }
+            }], {
+                title: feature_name,
+                bargroupgap: 0,
+                xaxis: {
+                    dtick: tick_spacing,
+                    range: [min,max],
+
+                    ticklen: 5,
+                    tickwidth: 1,
+                    showline: true,
+                    zeroline: false,
+                },
+                yaxis: {
+                    ticklen: 0,
+                    tickwidth: 1,
+                    showline: true,
+                },
+                margin: {
+                    t: 45,
+                    r: 10,
+                    b: 30,
+                    l: 30,
+                }
+            });
+        }
+
+        function bar(feature_name, features, categories) {
+            values = []
+            for (var i = 0; i < categories.length; i++) {
+                values[i] = 0;
+            }
+            for (var i = 0; i < features[feature_name].length; i++) {
+                values[categories.indexOf(features[feature_name][i])] += 1
+            }
+
+            Plotly.newPlot(feature_name + "_plot", [{
+                type: 'bar',
+                x: categories,
+                y: values,
+
+                marker: {
+                    line: {
+                        width: 1.0
+                    }
+                }
+            }], {
+                title: feature_name,
+                xaxis: {
+                    ticklen: 5,
+                    tickwidth: 1,
+                    showline: true,
+                    zeroline: false,
+                },
+                yaxis: {
+                    ticklen: 0,
+                    tickwidth: 1,
+                    showline: true,
+                },
+                margin: {
+                    t: 45,
+                    r: 10,
+                    b: 30,
+                    l: 30,
+                }
+            });
+        }
+
+        function pie(feature_name, features, categories) {
+            values = []
+            for (var i = 0; i < categories.length; i++) {
+                values[i] = 0;
+            }
+            for (var i = 0; i < features[feature_name].length; i++) {
+                values[categories.indexOf(features[feature_name][i])] += 1
+            }
+
+            Plotly.newPlot(feature_name + "_plot", [{
+                type: 'pie',
+                labels: categories,
+                values: values,
+            }], {
+                title: feature_name,
+                margin: {
+                    t: 45,
+                    r: 10,
+                    b: 30,
+                    l: 30,
+                }
+            });
+        }
+
         $(document).ready(function() {
             $.ajax({url: "../get_saved_albums/", success: function(result) {
                 $("#albums").html("");
@@ -48,12 +157,50 @@
                 $.ajax({url: "../get_tracks/?saved=" + saved + "&albums=" + album_ids + "&playlists=" + playlist_ids, success: function(result) {
                     $("#tracks").html("")
 
+                    features = {
+                        'danceability':     [],
+                        'energy':           [],
+                        'key':              [],
+                        'loudness':         [],
+                        'mode':             [],
+                        'speechiness':      [],
+                        'acousticness':     [],
+                        'instrumentalness': [],
+                        'liveness':         [],
+                        'valence':          [],
+                        'tempo':            [],
+                    }
+
                     tracks = result["tracks"];
                     for (var i = 0; i < tracks.length; i++) {
                         $("#tracks").append(
                             "<li><b>" + tracks[i]["name"] + "</b><br>" + tracks[i]["artists_str"] + "</li>"
                         );
+
+                        track_features = tracks[i]["features"];
+                        for (var feature in track_features) {
+                            if (feature != "type") {
+                                features[feature][i] = track_features[feature];
+                            }
+                        }
                     }
+
+                    histogram('danceability', features, 0.1, 0.0, 1.0, 0.02);
+                    histogram('energy', features, 0.1, 0.0, 1.0, 0.02);
+
+                    bar('key', features, ['C', 'C#/D♭', 'D', 'D#/E♭', 'E', 'F', 'F#/G♭', 'G', 'G#/A♭', 'A', 'A#/B♭', 'B']);
+                    histogram('loudness', features, 5.0, -60.0, 0.0, 1.0);
+
+                    pie('mode', features, ['minor', 'major']);
+
+                    histogram('speechiness', features, 0.1, 0.0, 1.0, 0.02);
+                    histogram('acousticness', features, 0.1, 0.0, 1.0, 0.02);
+
+                    histogram('instrumentalness', features, 0.1, 0.0, 1.0, 0.02);
+                    histogram('liveness', features, 0.1, 0.0, 1.0, 0.02);
+
+                    histogram('valence', features, 0.1, 0.0, 1.0, 0.02);
+                    histogram('tempo', features, 25, 0.0, 250.0, 5);
                 }});
             });
         });
@@ -68,7 +215,7 @@
 
             <table>
                 <tr width="100%">
-                    <td width="33%" style="vertical-align: top;">
+                    <td width="15%" style="vertical-align: top;">
                         <h2>Track Sources</h2>
                         <h3>Saved Tracks</h3>
                         <input type="checkbox" class="saved_tracks" id="saved_tracks">Include Saved Tracks</input>
@@ -81,11 +228,32 @@
                             <i>Loading playlists...</i>
                         </div>
                     </td>
-                    <td width="67%" style="vertical-align: top;">
+                    <td width="15%" style="vertical-align: top;">
                         <h2>Tracks</h2>
                         <button id="load_tracks">Load tracks...</button>
                         <div id="tracks">
 
+                        </div>
+                    </td>
+                    <td style="vertical-align: top;">
+                        <h2>Features</h2>
+                        <div id="features">
+                            <div id="danceability_plot" style="display: inline-block; max-width: 600px; max-height: 300px;"></div>
+                            <div id="energy_plot" style="display: inline-block; max-width: 600px; max-height: 300px;"></div>
+                            <br>
+                            <div id="key_plot" style="display: inline-block; max-width: 600px; max-height: 300px;"></div>
+                            <div id="loudness_plot" style="display: inline-block; max-width: 600px; max-height: 300px;"></div>
+                            <br>
+                            <div id="mode_plot" style="display: inline-block; max-width: 1200px; max-height: 300px;"></div>
+                            <br>
+                            <div id="speechiness_plot" style="display: inline-block; max-width: 600px; max-height: 300px;"></div>
+                            <div id="acousticness_plot" style="display: inline-block; max-width: 600px; max-height: 300px;"></div>
+                            <br>
+                            <div id="instrumentalness_plot" style="display: inline-block; max-width: 600px; max-height: 300px;"></div>
+                            <div id="liveness_plot" style="display: inline-block; max-width: 600px; max-height: 300px;"></div>
+                            <br>
+                            <div id="valence_plot" style="display: inline-block; max-width: 600px; max-height: 300px;"></div>
+                            <div id="tempo_plot" style="display: inline-block; max-width: 600px; max-height: 300px;"></div>
                         </div>
                     </td>
                 </tr>

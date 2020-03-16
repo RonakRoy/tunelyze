@@ -80,7 +80,11 @@ def get_tracks(request):
     playlists_ids = [] if playlists == "" else playlists[0:-1].split(',')
 
     tracks = sp.get_tracks(saved_tracks, album_ids, playlists_ids)
+    sp.load_features(tracks)
 
     return JsonResponse({
         'tracks': api.utils.get_dict_list(tracks)
     })
+
+def filter_tracks(request):
+    pass

@@ -89,7 +89,7 @@ class SpotifyClient(object):
             for track in self.get_playlist_tracks(playlist_id):
                 tracks.add(track)
                 
-        return tracks
+        return list(tracks)
     
     def get_saved_tracks(self):
         return self._get(50, self.sp.current_user_saved_tracks, lambda result_item : Track(result_item['track']))
@@ -100,8 +100,21 @@ class SpotifyClient(object):
     def get_playlist_tracks(self, playlist_id):
         return self._get(50, lambda limit, offset : self.sp.playlist_tracks(playlist_id, limit=limit, offset=offset), lambda result_item : Track(result_item['track']))
 
-    def get_features(self, track):
-        return Features(self.sp.audio_features(track.id)[0])
+    def load_features(self, tracks):
+        offset = 0
+        batch_size = 50
+        i = 0
+        while offset < len(tracks):
+            upper_limit = offset+batch_size
+            if upper_limit > len(tracks):
+                upper_limit = len(tracks)
+            
+            features_json = self.sp.audio_features([track.id for track in tracks[offset:upper_limit]])
+            for feature_json in features_json:
+                tracks[i].features = Features(feature_json)
+                i += 1
+            
+            offset += batch_size
 
     def create_playlist(self, name, tracks):
         pl = self.sp.user_playlist_create(self.sp.current_user()['id'], name)
@@ -130,8 +143,9 @@ class Artist(object):
     def to_dict(self):
         return {
             'type': 'artist',
+
             'name': self.name,
-            'id': self.id
+            'id':   self.id
         }
 
     def json(self):
@@ -148,11 +162,12 @@ class Album(object):
 
     def to_dict(self):
         return {
-            'type': 'album',
-            'name': self.name,
-            'id': self.id,
-            'artists': [artist.to_dict() for artist in self.artists],
-            'artists_str': utils.get_english_list([artist.name for artist in self.artists])
+            'type':         'album',
+
+            'name':         self.name,
+            'id':           self.id,
+            'artists':      [artist.to_dict() for artist in self.artists],
+            'artists_str':  utils.get_english_list([artist.name for artist in self.artists])
         }
 
     def json(self):
@@ -169,10 +184,11 @@ class Playlist(object):
 
     def to_dict(self):
         return {
-            'type': 'playlist',
-            'name': self.name,
-            'id': self.id,
-            'collab': self.collab
+            'type':     'playlist',
+
+            'name':     self.name,
+            'id':       self.id,
+            'collab':   self.collab
         }
 
 class Track(object):
@@ -181,11 +197,6 @@ class Track(object):
         self.id = spotipy_track['id']
         self.artists = [Artist(spotipy_artist) for spotipy_artist in spotipy_track['artists']]
         self.features = None
-
-    def load_features(self, spotify_client):
-        self.features = spotify_client.get_features(self)
-
-        return self.features
 
     def get_feature(self, feature_type):
         if self.features == None:
@@ -237,12 +248,13 @@ class Track(object):
     
     def to_dict(self):
         return {
-            'type': 'track',
-            'name': self.name,
-            'id': self.id,
-            'artists': [artist.to_dict() for artist in self.artists],
-            'artists_str': utils.get_english_list([artist.name for artist in self.artists]),
-            'features': None if self.features == None else self.features.json()
+            'type':         'track',
+
+            'name':         self.name,
+            'id':           self.id,
+            'artists':      [artist.to_dict() for artist in self.artists],
+            'artists_str':  utils.get_english_list([artist.name for artist in self.artists]),
+            'features':     None if self.features == None else self.features.to_dict()
         }
 
     def json(self):
@@ -301,3 +313,20 @@ class Features(object):
         self.liveness = spotipy_features['liveness']
         self.valence = spotipy_features['valence']
         self.tempo = spotipy_features['tempo']
+
+    def to_dict(self):
+        return {
+            'type':             'features',
+
+            'danceability':     self.danceability,
+            'energy':           self.energy,
+            'key':              self.key,
+            'loudness':         self.loudness,
+            'mode':             self.mode,
+            'speechiness':      self.speechiness,
+            'acousticness':     self.acousticness,
+            'instrumentalness': self.instrumentalness,
+            'liveness':         self.liveness,
+            'valence':          self.valence,
+            'tempo':            self.tempo
+        }

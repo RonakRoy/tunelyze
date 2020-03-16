@@ -11,5 +11,5 @@ urlpatterns = [
 
     path('get_saved_albums/',   views.get_saved_albums,   name='get_saved_albums'),
     path('get_playlists/',      views.get_playlists,      name='get_playlists'),
-    path('get_tracks/',         views.get_tracks,         name='get_tracks')
+    path('get_tracks/',         views.get_tracks,         name='get_tracks'),
 ]
