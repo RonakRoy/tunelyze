@@ -264,14 +264,14 @@ class FeatureType(Enum):
     DANCEABILITY = (0, (0.0, 1.0))
     ENERGY = (1, (0.0, 1.0))
     KEY = (2, ['C', 'C#/D♭', 'D', 'D#/E♭', 'E', 'F', 'F#/G♭', 'G', 'G#/A♭', 'A', 'A#/B♭', 'B'])
-    LOUDNESS = (3, (-120.0, 0.0))
+    LOUDNESS = (3, (-60.0, 0.0))
     MODE = (3, ['minor', 'major'])
     SPEECHINESS = (4, (0.0, 1.0))
     ACOUSTICNESS = (5, (0.0, 1.0))
     INSTRUMENTALNESS = (6, (0.0, 1.0))
     LIVENESS = (7, (0.0, 1.0))
     VALENCE = (8, (0.0, 1.0))
-    TEMPO = (9, (0.0, 300.0))
+    TEMPO = (9, (0.0, 250.0))
 
 class FeatureFilter(object):
     def __init__(self, feature_type, values=None, min_val=None, max_val=None):
