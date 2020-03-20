@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,382 +9,10 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
-    <script>
-        function histogram_trace(data, min, max, tick_spacing) {
-            return {
-                type: 'histogram',
-                x: data,
+    <script src="{% static 'spotidata/plot.js' %}"></script>
+    <script src="{% static 'spotidata/app.js' %}"></script>
 
-                xbins: {
-                    start: min,
-                    end: max,
-                    size: tick_spacing / 5.0,
-                },
-                
-                marker: {
-                    line: {
-                        width: 1.0
-                    }
-                }
-            };
-        }
-
-        function plot_histogram(feature_name, traces, min, max, tick_spacing) {
-            Plotly.newPlot(feature_name + "_plot", traces,
-            {
-                title: feature_name,
-                showlegend: false,
-                barmode: "overlay",
-                bargroupgap: 0,
-                xaxis: {
-                    dtick: tick_spacing,
-                    range: [min,max],
-
-                    ticklen: 5,
-                    tickwidth: 1,
-                    showline: true,
-                    zeroline: false,
-                },
-                yaxis: {
-                    ticklen: 0,
-                    tickwidth: 1,
-                    showline: true,
-                },
-                margin: {
-                    t: 45,
-                    r: 10,
-                    b: 30,
-                    l: 30,
-                },
-            }, {displayModeBar: false});
-        }
-
-        function filtered_histogram(feature_name, filtered_feature_values, feature_values, min, max, tick_spacing) {
-            plot_histogram(feature_name, [
-                histogram_trace(feature_values[feature_name], min, max, tick_spacing),
-                histogram_trace(filtered_feature_values[feature_name], min, max, tick_spacing)
-            ], min, max, tick_spacing);
-        }
-
-        function histogram(feature_name, feature_values, min, max, tick_spacing) {
-            plot_histogram(feature_name, [
-                histogram_trace(feature_values[feature_name], min, max, tick_spacing),
-            ], min, max, tick_spacing);
-        }
-
-
-
-        function bar_trace(feature_name, features, categories) {
-            values = []
-            for (var i = 0; i < categories.length; i++) {
-                values[i] = 0;
-            }
-            for (var i = 0; i < features[feature_name].length; i++) {
-                values[categories.indexOf(features[feature_name][i])] += 1
-            }
-
-            return {
-                type: 'bar',
-                x: categories,
-                y: values,
-
-                marker: {
-                    line: {
-                        width: 1.0
-                    }
-                }
-            }
-        }
-
-        function plot_bar(feature_name, traces) {
-            Plotly.newPlot(feature_name + "_plot", traces,
-            {
-                title: feature_name,
-                showlegend: false,
-                barmode: "overlay",
-                xaxis: {
-                    ticklen: 5,
-                    tickwidth: 1,
-                    showline: true,
-                    zeroline: false,
-                },
-                yaxis: {
-                    ticklen: 0,
-                    tickwidth: 1,
-                    showline: true,
-                },
-                margin: {
-                    t: 45,
-                    r: 10,
-                    b: 30,
-                    l: 30,
-                }
-            }, {displayModeBar: false});
-        }
-
-        function filtered_bar(feature_name, filtered_feature_values, feature_values, categories) {
-            plot_bar(feature_name, [
-                bar_trace(feature_name, feature_values, categories),
-                bar_trace(feature_name, filtered_feature_values, categories),
-            ])
-        }
-
-        function bar(feature_name, feature_values, categories) {
-            plot_bar(feature_name, [
-                bar_trace(feature_name, feature_values, categories)
-            ])
-        }
-
-
-
-        function pie_trace(feature_name, features, categories, name, col) {
-            values = []
-            for (var i = 0; i < categories.length; i++) {
-                values[i] = 0;
-            }
-            for (var i = 0; i < features[feature_name].length; i++) {
-                values[categories.indexOf(features[feature_name][i])] += 1
-            }
-
-            return {
-                type: 'pie',
-                labels: categories,
-                textinfo: "label+percent",
-                values: values,
-                name: name,
-                domain: {
-                    row: 0,
-                    column: col
-                },
-            };
-        }
-
-        function plot_pie(num, feature_name, traces) {
-            Plotly.newPlot(feature_name + "_plot", traces,
-            {
-                title: feature_name,
-                showlegend: false,
-                margin: {
-                    t: 45,
-                    r: 10,
-                    b: 30,
-                    l: 30,
-                },
-                grid: {rows: 1, columns: num}
-            }, {displayModeBar: false});
-        }
-
-        function filtered_pie(feature_name, filtered_features, features, categories) {
-            plot_pie(2, feature_name, [
-                pie_trace(feature_name, filtered_features, categories, "filtered", 1),
-                pie_trace(feature_name, features, categories, "all tracks", 0)
-            ])
-        }
-
-        function pie(feature_name, features, categories) {
-            plot_pie(1, feature_name, [
-                pie_trace(feature_name, features, categories, "tracks", 0)
-            ])
-        }
-
-        $(document).ready(function() {
-            feature_types = ['danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo']
-            feature_defs = {
-                'danceability':     {type: 'range', min: 0.0, max: 1.0, tick_spacing: 0.1},
-                'energy':           {type: 'range', min: 0.0, max: 1.0, tick_spacing: 0.1},
-                'key':              {type: 'discrete', options: ['C', 'C#/D♭', 'D', 'D#/E♭', 'E', 'F', 'F#/G♭', 'G', 'G#/A♭', 'A', 'A#/B♭', 'B']},
-                'loudness':         {type: 'range', min: -60.0, max: 0.0, tick_spacing: 5.0},
-                'mode':             {type: 'discrete', options: ['minor', 'major']},
-                'speechiness':      {type: 'range', min: 0.0, max: 1.0, tick_spacing: 0.1},
-                'acousticness':     {type: 'range', min: 0.0, max: 1.0, tick_spacing: 0.1},
-                'instrumentalness': {type: 'range', min: 0.0, max: 1.0, tick_spacing: 0.1},
-                'liveness':         {type: 'range', min: 0.0, max: 1.0, tick_spacing: 0.1},
-                'valence':          {type: 'range', min: 0.0, max: 1.0, tick_spacing: 0.1},
-                'tempo':            {type: 'range', min: 0.0, max: 250.0, tick_spacing: 25},
-            }
-
-            for (var i = 0; i < feature_types.length; i++) {
-                var feature = feature_types[i];
-                var feature_def = feature_defs[feature];
-
-                if (feature_def.type == "range") {
-                    $("#filter").append(
-                        "<li>" +
-                            "<input type='checkbox' id='use_" + feature + "_filter' class='filter' /> <b>" + feature + "</b> &nbsp &nbsp &nbsp &nbsp" +
-                            "min: <input type='text' id='" + feature + "_min' value='" + feature_def.min + "' /> &nbsp &nbsp" +
-                            "max: <input type='text' id='" + feature + "_max' value='" + feature_def.max + "' />" + 
-                        "</li>"
-                    );
-                }
-                else if (feature_def.type == "discrete") {
-                    var in_checks = "";
-                    var options = feature_def.options;
-                    for (var j = 0; j < options.length; j++) {
-                        in_checks +=  "<input type='checkbox' class='" + feature + "_options' id='" + feature + "_" + options[j] + "' class='filter' /> " + options[j] + " &nbsp &nbsp";
-                    }
-
-                    $("#filter").append(
-                        "<li>" +
-                            "<input type='checkbox' id='use_" + feature + "_filter' class='filter' /> <b>" + feature + "</b> &nbsp &nbsp &nbsp &nbsp" +
-                            in_checks + 
-                        "</li>"
-                    );
-                }
-            }
-            $("#filter").append("<button id='apply_filters'>Apply Filters</button>");
-
-            function process_features(tracks) {
-                var feature_values = {};
-
-                for (var i = 0; i < feature_types.length; i++) {
-                    feature_values[feature_types[i]] = [];
-                }
-
-                for (var i = 0; i < tracks.length; i++) {
-                    $("#tracks").append(
-                        "<li><b>" + tracks[i]["name"] + "</b><br>" + tracks[i]["artists_str"] + "</li>"
-                    );
-
-                    track_features = tracks[i]["features"];
-                    for (var feature in track_features) {
-                        if (feature != "type") {
-                            feature_values[feature][i] = track_features[feature];
-                        }
-                    }
-                }
-
-                return feature_values;
-            }
-
-            $.ajax({url: "../get_saved_albums/", success: function(result) {
-                $("#albums").html("");
-                albums = result["albums"];
-                for (var i = 0; i < albums.length; i++) {
-                    $("#albums").append(
-                        "<input type='checkbox' class='album' id='" + albums[i]["id"] + "'><b>" + albums[i]["name"] + "</b><br>" + albums[i]["artists_str"] + "</input><br>"
-                    );
-                }
-            }});
-            $.ajax({url: "../get_playlists/", success: function(result) {
-                $("#playlists").html("");
-                playlists = result["playlists"];
-                for (var i = 0; i < playlists.length; i++) {
-                    $("#playlists").append(
-                        "<input type='checkbox' class='playlist' id='" + playlists[i]["id"] + "'><b>" + playlists[i]["name"] + "</b></input><br>"
-                    );
-                }
-            }});
-
-            var tracks;
-            var feature_values;
-            $("#load_tracks").click(function() {
-                saved = $("#saved_tracks").prop('checked');
-
-                album_ids = "";
-                $(".album").each(function(index) {
-                    if ($(this).prop('checked')) {
-                        album_ids += $(this).attr('id') + ",";
-                    }
-                });
-
-
-                playlist_ids = "";
-                $(".playlist").each(function(index) {
-                    if ($(this).prop('checked')) {
-                        playlist_ids += $(this).attr('id') + ",";
-                    }
-                });
-
-                $("#tracks").html("<i>Loading tracks...</i>")
-                $.ajax({url: "../get_tracks/?saved=" + saved + "&albums=" + album_ids + "&playlists=" + playlist_ids, success: function(result) {
-                    $("#tracks").html("")
-
-                    tracks = result["tracks"];
-                    feature_values = process_features(tracks);
-
-                    for (var i = 0; i < feature_types.length; i++) {
-                        var feature = feature_types[i];
-                        var feature_def = feature_defs[feature]
-
-                        if (feature_def.type == "range") {
-                            histogram(feature, feature_values, feature_def.min, feature_def.max, feature_def.tick_spacing);
-                        }
-                        else if (feature == 'key') {
-                            bar('key', feature_values, feature_def.options);
-                        }
-                        else if (feature == 'mode') {
-                            pie('mode', feature_values, feature_def.options);
-                        }
-                    }
-                }});
-            });
-
-            var filtered_tracks;
-            $("#apply_filters").click(function() {
-                filtered_tracks = tracks.slice();
-                var track_buffer = [];
-
-                for (var i = 0; i < feature_types.length; i++) {
-                    var feature = feature_types[i];
-                    var feature_def = feature_defs[feature];
-
-                    if ($("#use_" + feature + "_filter").prop('checked') == false) {
-                        continue;
-                    }
-
-                    if (feature_def.type == 'range') {
-                        min_val = $("#" + feature + "_min").prop('value');
-                        max_val = $("#" + feature + "_max").prop('value');
-
-                        for (var j = 0; j < filtered_tracks.length; j++) {
-                            var track = filtered_tracks[j];
-                            var feature_value = track["features"][feature];
-
-                            if (feature_value >= min_val && feature_value <= max_val) {
-                                track_buffer.push(track);
-                            }
-                        }
-                    }
-                    else {
-                        allowed_options = []
-                        $("." + feature + "_options").each(function(index) {
-                            if ($(this).prop('checked')) {
-                                allowed_options.push($(this).attr('id').substring(feature.length + 1));
-                            }
-                        });
-
-                        for (var j = 0; j < filtered_tracks.length; j++) {
-                            var track = filtered_tracks[j];
-                            var feature_value = track["features"][feature];
-
-                            if (allowed_options.indexOf(feature_value) != -1) {
-                                track_buffer.push(track);
-                            }
-                        }
-                    }
-
-                    filtered_tracks = track_buffer.slice();
-                    track_buffer = [];
-                }
-
-                filtered_feature_values = process_features(filtered_tracks);
-                for (var i = 0; i < feature_types.length; i++) {
-                    var feature = feature_types[i];
-                    var feature_def = feature_defs[feature]
-
-                    if (feature_def.type == "range") {
-                        filtered_histogram(feature, filtered_feature_values, feature_values, feature_def.min, feature_def.max, feature_def.tick_spacing);
-                    }
-                    else if (feature == 'key') {
-                        filtered_bar('key', filtered_feature_values, feature_values, feature_def.options);
-                    }
-                    else if (feature == 'mode') {
-                        filtered_pie('mode', filtered_feature_values, feature_values, feature_def.options);
-                    }
-                }
-            });
-        });
-    </script>
+    <link rel="stylesheet" href="{% static 'spotidata/style.css' %}">
 </head>
 <body>
     <div class="container">
@@ -395,22 +25,24 @@
                 <tr width="100%">
                     <td width="15%" style="vertical-align: top;">
                         <h2>Track Sources</h2>
+
                         <h3>Saved Tracks</h3>
                         <input type="checkbox" class="saved_tracks" id="saved_tracks">Include Saved Tracks</input>
+
                         <h3>Saved Albums</h3>
                         <div id="albums">
                             <i>Loading saved albums...</i>
                         </div>
+                        
                         <h3>Playlists</h3>
                         <div id="playlists">
                             <i>Loading playlists...</i>
                         </div>
                     </td>
-                    <td width="15%" style="vertical-align: top;">
+                    <td width="20%" style="vertical-align: top;">
                         <h2>Tracks</h2>
                         <button id="load_tracks">Load tracks...</button>
                         <div id="tracks">
-
                         </div>
                     </td>
                     <td style="vertical-align: top;">
@@ -418,24 +50,29 @@
                         <div id="filter">
                         </div>
 
+                        <h2>Playlist Creation</h2>
+                        <div id="playlist">
+                            Load some tracks and apply some filters in order to generate a playist!
+                        </div>
+
                         <h2>Features</h2>
                         <div id="features">
-                            <div id="danceability_plot" style="display: inline-block; max-width: 400px; max-height: 300px;"></div>
-                            <div id="energy_plot" style="display: inline-block; max-width: 400px; max-height: 300px;"></div>
+                            <div id="danceability_plot" class="half_plot"></div>
+                            <div id="energy_plot" class="half_plot"></div>
                             <br>
-                            <div id="key_plot" style="display: inline-block; max-width: 400px; max-height: 300px;"></div>
-                            <div id="loudness_plot" style="display: inline-block; max-width: 400px; max-height: 300px;"></div>
+                            <div id="key_plot" class="half_plot"></div>
+                            <div id="loudness_plot" class="half_plot"></div>
                             <br>
-                            <div id="mode_plot" style="display: inline-block; max-width: 800px; max-height: 300px;"></div>
+                            <div id="mode_plot" class="full_plot"></div>
                             <br>
-                            <div id="speechiness_plot" style="display: inline-block; max-width: 400px; max-height: 300px;"></div>
-                            <div id="acousticness_plot" style="display: inline-block; max-width: 400px; max-height: 300px;"></div>
+                            <div id="speechiness_plot" class="half_plot"></div>
+                            <div id="acousticness_plot" class="half_plot"></div>
                             <br>
-                            <div id="instrumentalness_plot" style="display: inline-block; max-width: 400px; max-height: 300px;"></div>
-                            <div id="liveness_plot" style="display: inline-block; max-width: 400px; max-height: 300px;"></div>
+                            <div id="instrumentalness_plot" class="half_plot"></div>
+                            <div id="liveness_plot" class="half_plot"></div>
                             <br>
-                            <div id="valence_plot" style="display: inline-block; max-width: 400px; max-height: 300px;"></div>
-                            <div id="tempo_plot" style="display: inline-block; max-width: 400px; max-height: 300px;"></div>
+                            <div id="valence_plot" class="half_plot"></div>
+                            <div id="tempo_plot" class="half_plot"></div>
                         </div>
                     </td>
                 </tr>

@@ -86,5 +86,16 @@ def get_tracks(request):
         'tracks': api.utils.get_dict_list(tracks)
     })
 
-def filter_tracks(request):
-    pass
+def make_playlist(request):
+    sp = SpotifyClient(request.session['access_token'])
+
+    name = request.GET.get('name')
+
+    tracks = request.GET.get('tracks')
+    track_ids = [] if tracks == "" else tracks[0:-1].split(',')
+
+    plist_id = sp.create_playlist(name, track_ids)
+
+    return JsonResponse({
+        'id': str(plist_id)
+    })

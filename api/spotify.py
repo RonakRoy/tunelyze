@@ -116,21 +116,23 @@ class SpotifyClient(object):
             
             offset += batch_size
 
-    def create_playlist(self, name, tracks):
+    def create_playlist(self, name, track_ids):
         pl = self.sp.user_playlist_create(self.sp.current_user()['id'], name)
 
         batch_size = 80
         
-        track_ids = []
-        for track in tracks:
-            track_ids.append(track.id)
+        batch = []
+        for track_id in track_ids:
+            batch.append(track_id)
 
-            if len(track_ids) >= batch_size:
-                self.sp.user_playlist_add_tracks(self.sp.current_user()['id'], pl['id'], track_ids)
-                track_ids = []
+            if len(batch) >= batch_size:
+                self.sp.user_playlist_add_tracks(self.sp.current_user()['id'], pl['id'], batch)
+                batch = []
 
-        if len(track_ids) != 0:
-            self.sp.user_playlist_add_tracks(self.sp.current_user()['id'], pl['id'], track_ids)
+        if len(batch) != 0:
+            self.sp.user_playlist_add_tracks(self.sp.current_user()['id'], pl['id'], batch)
+
+        return pl['id']
 
 class Artist(object):
     def __init__(self, spotipy_artist):
