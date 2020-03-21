@@ -1,2 +1,4 @@
-# spotidata
- A python library for analyzing, sorting, flitering, and grouping songs based on the Spotify-provided track features of songs.
+# tunelyze
+Analyze Your Tunes.™
+
+A Python library that can sort, fliter, and group songs based on the Spotify API-provided features of those songs.

@@ -16,7 +16,7 @@ from api.spotify import SpotifyClient
 
 # Create your views here.
 def index(request):
-    return render(request, 'spotidata/index.html', {'message': 'Please connect to Spotify.'})
+    return render(request, 'tunelyze/index.html', {'message': 'Please connect to Spotify.'})
 
 def auth(request):
     sp_oauth, redirect_uri = web_utils.get_oauth('config.yml')
@@ -34,21 +34,21 @@ def auth_callback(request):
         request.session['access_token'] = token_info['access_token']
         request.session['token_expries_at'] = token_info['expires_at']
 
-        return HttpResponseRedirect('/spotidata/you/')
+        return HttpResponseRedirect('/tunelyze/you/')
     else:
-        return HttpResponseRedirect('/spotidata/login_failed/')
+        return HttpResponseRedirect('/tunelyze/login_failed/')
 
 def auth_success(request):
     token_expries_at = request.session['token_expries_at']
 
     if token_expries_at > time.time():
         sp = SpotifyClient(request.session['access_token'])
-        return render(request, 'spotidata/auth_success.html', {'name': sp.sp.current_user()['display_name'], 'id': sp.sp.current_user()['id']})
+        return render(request, 'tunelyze/auth_success.html', {'name': sp.sp.current_user()['display_name'], 'id': sp.sp.current_user()['id']})
     else:
-        return HttpResponseRedirect('/spotidata/auth/')
+        return HttpResponseRedirect('/tunelyze/auth/')
 
 def auth_fail(request):
-    return render(request, 'spotidata/auth_fail.html', {})
+    return render(request, 'tunelyze/auth_fail.html', {})
 
 def get_saved_albums(request):
     sp = SpotifyClient(request.session['access_token'])
