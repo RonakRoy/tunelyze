@@ -43,7 +43,9 @@ def auth_success(request):
 
     if token_expries_at > time.time():
         sp = SpotifyClient(request.session['access_token'])
-        return render(request, 'tunelyze/auth_success.html', {'name': sp.sp.current_user()['display_name'], 'id': sp.sp.current_user()['id']})
+        display_name = sp.sp.current_user()['display_name']
+        name = display_name if display_name != "" else sp.sp.current_user()['id']
+        return render(request, 'tunelyze/auth_success.html', {'name': name})
     else:
         return HttpResponseRedirect('/tunelyze/auth/')
 

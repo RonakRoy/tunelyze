@@ -69,23 +69,45 @@ $(document).ready(function() {
     //=======================================\\
     //======== Loading Track Sources ========\\
     //=======================================\\
+    $("#saved").click(function() {
+        $(this).toggleClass('selected')
+    })
+
     $.ajax({url: "../get_saved_albums/", success: function(result) {
         $("#albums").html("")
         albums = result["albums"]
         for (var i = 0; i < albums.length; i++) {
             $("#albums").append(
-                "<input type='checkbox' class='album' id='" + albums[i]["id"] + "'><b>" + albums[i]["name"] + "</b><br>" + albums[i]["artists_str"] + "</input><br>"
+                "<div class='album source clickable hover_animate' id='" + albums[i]["id"] + "'>" + 
+                    "<img class='art hover_animate' src='" + albums[i]["art_url"] + "'></img>" + 
+                    "<div><b>" + albums[i]["name"] + "</b><br>" + albums[i]["artists_str"] + "</div>" +
+                "</div>"
             )
         }
+
+        $(".album").each(function(index) {
+            $(this).click(function() {
+                $(this).toggleClass('selected')
+            })
+        })
     }})
     $.ajax({url: "../get_playlists/", success: function(result) {
         $("#playlists").html("")
         playlists = result["playlists"]
         for (var i = 0; i < playlists.length; i++) {
             $("#playlists").append(
-                "<input type='checkbox' class='playlist' id='" + playlists[i]["id"] + "'><b>" + playlists[i]["name"] + "</b></input><br>"
+                "<div class='playlist source clickable hover_animate' id='" + playlists[i]["id"] + "'>" + 
+                    "<img class='art hover_animate' src='" + playlists[i]["art_url"] + "'></img>" + 
+                    "<div><b>" + playlists[i]["name"] + "</b><br>" + playlists[i]["owner"] + "</div>" +
+                "</div>"
             )
         }
+
+        $(".playlist").each(function(index) {
+            $(this).click(function() {
+                $(this).toggleClass('selected')
+            })
+        })
     }})
 
     //========================================\\
@@ -94,11 +116,11 @@ $(document).ready(function() {
     var tracks
     var feature_values
     $("#load_tracks").click(function() {
-        saved = $("#saved_tracks").prop('checked')
+        saved = $("#saved").hasClass('selected')
 
         album_ids = ""
         $(".album").each(function(index) {
-            if ($(this).prop('checked')) {
+            if ($(this).hasClass('selected')) {
                 album_ids += $(this).attr('id') + ","
             }
         })
@@ -106,21 +128,25 @@ $(document).ready(function() {
 
         playlist_ids = ""
         $(".playlist").each(function(index) {
-            if ($(this).prop('checked')) {
+            if ($(this).hasClass('selected')) {
                 playlist_ids += $(this).attr('id') + ","
             }
         })
 
-        $("#tracks").html("<i>Loading tracks...</i>")
+        $("#tracks").html("<div class='track'><i>Loading tracks...</i></div>")
         $.ajax({url: "../get_tracks/?saved=" + saved + "&albums=" + album_ids + "&playlists=" + playlist_ids, success: function(result) {
             $("#tracks").html("")
 
             tracks = result["tracks"]
             for (var i = 0; i < tracks.length; i++) {
                 $("#tracks").append(
-                    "<li class='track' id='" + tracks[i]["id"] + "'><b>" + tracks[i]["name"] + "</b><br>" + tracks[i]["artists_str"] + "</li>"
+                    "<div class='track' id='" + tracks[i]["id"] + "'>" + 
+                        "<img class='art hover_animate' src='" + tracks[i]["art_url"] + "'></img>" +
+                        "<div><b>" + tracks[i]["name"] + "</b><br>" + tracks[i]["artists_str"] + "</div>" +
+                    "</div>"
                 )
             }
+            console.log("loaded haha")
             feature_values = process_features(tracks)
 
             for (var i = 0; i < feature_types.length; i++) {
@@ -237,4 +263,12 @@ $(document).ready(function() {
             }})
         })
     })
+})
+
+$("body").ready(function() {
+    $("#main_content").css("max-height", $(window).height() - $("#header").height() - 48)
+})
+
+$(window).resize(function() {
+    $("#main_content").css("max-height", $(window).height() - $("#header").height() - 48)
 })

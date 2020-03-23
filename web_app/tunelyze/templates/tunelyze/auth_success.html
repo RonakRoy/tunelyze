@@ -12,72 +12,332 @@
     <script src="{% static 'tunelyze/plot.js' %}"></script>
     <script src="{% static 'tunelyze/app.js' %}"></script>
 
-    <link rel="stylesheet" href="{% static 'tunelyze/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&display=swap" rel="stylesheet">    <link rel="stylesheet" href="{% static 'tunelyze/style.css' %}">
+
+    <style>
+        body {
+            background-color: #0D1B2A;
+            color: #E0E1DD;
+
+            margin: 0px;
+            padding: 0px;
+
+            min-height: 0;
+            max-height: 100%;
+
+            overflow: hidden;
+
+            font-family: "Montserrat", "Helvetica", "Arial", sans-serif;
+        }
+
+        .main_content {
+            width: 100%;
+            min-height: 0;
+
+            overflow-x: scroll;
+
+            display: grid;
+            grid-template-columns: 348px 304px auto;
+            grid-template-rows: auto auto minmax(0, 1fr);
+            grid-template-areas:
+              "sources_header tracks_header filviz_header"
+              "sources tracks_button filviz"
+              "sources tracks filviz";
+        }
+
+        .main_content>.header {
+            padding: 24px 24px 0px;
+        }
+
+        .main_content>.column {
+            padding: 0px 24px 24px;
+
+            overflow: scroll;
+        }
+        
+        body>.header {
+            display: flex;
+            align-items: center;
+
+            padding: 16px 32px;
+            background: rgba(0,0,0,.5);
+        }
+
+        .logo {
+            flex: 1 0 auto;
+            font-size: 42px;
+            font-weight: 700;
+        }
+
+        .user_info {
+            text-align: center;
+        }
+
+        .user_info>.name {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            margin-bottom: 4px;
+        }
+
+        h1, h2 {
+            margin-top: 0px;
+        }
+
+        div.user_icon {
+            width: 60px;
+            height: 60px;
+
+                    clip-path: circle(30px at center);
+            -webkit-clip-path: circle(30px at center);
+               -moz-clip-path: circle(30px at center);
+                -ms-clip-path: circle(30px at center);
+                 -o-clip-path: circle(30px at center);
+
+            margin-left: 8px;
+            background: black;
+        }
+
+        .source {
+            color: #b5b7ae;
+            background: rgba(0,0,0,.25);
+
+            display: flex;
+            align-items: flex-end;
+
+            padding: 16px;
+            margin-bottom: 12px;
+
+                    border-radius: 12px;
+            -webkit-border-radius: 12px;
+               -moz-border-radius: 12px;
+                -ms-border-radius: 12px;
+                 -o-border-radius: 12px;
+        }
+
+        .source.selected {
+            color: #E0E1DD;
+            background: #1B263B;
+        }
+
+        .source:hover {
+            color: #E0E1DD;
+            background: rgba(0,0,0,.5);
+        }
+
+        .source>.art {
+            background: white;
+            min-width: 60px;
+            max-width: 60px;
+            height: 60px;
+
+            margin-right: 8px;
+
+            filter: grayscale(1.0);
+
+                    border-radius: 4px;
+            -webkit-border-radius: 4px;
+               -moz-border-radius: 4px;
+                -ms-border-radius: 4px;
+                 -o-border-radius: 4px;
+
+            box-shadow: 2px 4px 8px rgba(0,0,0,.4);
+        }
+
+        .source:hover>.art{
+            filter: grayscale(0.0);
+        }
+
+        .source.selected>.art {
+            filter: grayscale(0.0);
+        }
+
+        .load_tracks_button {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 2px solid #5b5c5a;
+
+            background: rgba(0,0,0,.75)
+        }
+
+        .load_tracks_button:hover {
+            background: rgba(80,80,80,.75);
+        }
+
+        .track_list {
+            overflow: scroll;
+
+            padding: 8px 8px 12px;
+        }
+
+        .track {
+            display: flex;
+            align-items: center;
+
+            padding: 12px;
+
+            border-bottom: 2px solid #5b5c5a;
+        }
+
+        .track>.art {
+            background: white;
+            min-width: 30px;
+            max-width: 30px;
+            height: 30px;
+
+            margin-right: 8px;
+
+                    border-radius: 2px;
+            -webkit-border-radius: 2px;
+               -moz-border-radius: 2px;
+                -ms-border-radius: 2px;
+                 -o-border-radius: 2px;
+
+            box-shadow: 2px 4px 8px rgba(0,0,0,.4);
+        }
+
+        .track.filtered_out {
+            color: #adadad;
+        }
+
+        .track.filtered_out>.art {
+            filter: grayscale(1.0);
+        }
+
+        .half_plot {
+            display: inline-block;
+            /* max-width: 400px; */
+            /* max-height: 300px; */
+        }
+
+        .full_plot {
+            display: inline-block;
+            /* max-width: 800px; */
+            /* max-height: 300px; */
+        }
+
+        a {
+            color: #E0E1DD;
+        }
+
+        a:hover {
+            color: #b5b7ae;
+        }
+
+        .scrollable {
+            overflow: scroll;
+        }
+
+        .clickable:hover {
+            cursor: pointer;
+        }
+
+        .hover_animate {
+                    transition: all 0.15s ease-out;
+            -webkit-transition: all 0.15s ease-out;
+               -moz-transition: all 0.15s ease-out;
+                -ms-transition: all 0.15s ease-out;
+                 -o-transition: all 0.15s ease-out;
+        }
+
+        .hover_animate:hover {
+                    transition: all 0.15s ease-out;
+            -webkit-transition: all 0.15s ease-out;
+               -moz-transition: all 0.15s ease-out;
+                -ms-transition: all 0.15s ease-out;
+                 -o-transition: all 0.15s ease-out;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <article id="main">
-            Login successful! <br>
-            <b>Display Name:</b> {{ name }} <br>
-            <b>ID:</b> {{ id }} <br>
+    <div class="header" id="header">
+        <div class="logo">
+            tunelyze
+        </div>
+        <div class="user_info">
+            <span class="name">{{ name }}</span>
+            <br>
+            <a href="">Not You?</a>
+        </div>
+        <div class="user_icon">
+            <img class="user_icon"></img>
+        </div>
+    </div>
 
-            <table>
-                <tr width="100%">
-                    <td width="15%" style="vertical-align: top;">
-                        <h2>Track Sources</h2>
+    <div class="main_content" id="main_content">
+        <div style="grid-area: sources_header" class="header">
+            <h2>Track Sources</h2>
+        </div>
+        <div style="grid-area: sources" class="column">
+            <h3>Saved Tracks</h3>
+            <div class="saved source clickable hover_animate" id="saved">
+                <img class='art hover_animate' src="{% static 'tunelyze/liked_songs.png' %}"></img>
+                <div>
+                    <b>Liked Songs</b> <br>
+                    {{ name }}
+                </div>
+            </div>
 
-                        <h3>Saved Tracks</h3>
-                        <input type="checkbox" class="saved_tracks" id="saved_tracks">Include Saved Tracks</input>
+            <h3>Saved Albums</h3>
+            <div id="albums">
+                <i>Loading saved albums...</i>
+            </div>
+            
+            <h3>Playlists</h3>
+            <div id="playlists">
+                <i>Loading playlists...</i>
+            </div>
+        </div>
 
-                        <h3>Saved Albums</h3>
-                        <div id="albums">
-                            <i>Loading saved albums...</i>
-                        </div>
-                        
-                        <h3>Playlists</h3>
-                        <div id="playlists">
-                            <i>Loading playlists...</i>
-                        </div>
-                    </td>
-                    <td width="20%" style="vertical-align: top;">
-                        <h2>Tracks</h2>
-                        <button id="load_tracks">Load tracks...</button>
-                        <div id="tracks">
-                        </div>
-                    </td>
-                    <td style="vertical-align: top;">
-                        <h2>Filter</h2>
-                        <div id="filter">
-                        </div>
+        <div style="grid-area: tracks_header; padding-left: 0px" class="header">
+            <h2>Tracks</h2>
+        </div>
+        <div style="grid-area: tracks_button">
+            <div class="load_tracks_button clickable hover_animate" id="load_tracks">Load tracks...</div>
+        </div>
+        <div style="background: rgba(0,0,0,.75); grid-area: tracks; padding: 0px" class="column">
+            <div class="track_list" id="tracks">
+            </div>
+        </div>
 
-                        <h2>Playlist Creation</h2>
-                        <div id="playlist">
-                            Load some tracks and apply some filters in order to generate a playist!
-                        </div>
+        <div style="grid-area: filviz_header" class="header">
+            <h2>Filter and Visualize</h2>
+        </div>
+        <div style="grid-area: filviz" class="column">
+            <div class="scrollable">
+                <h3>Filter</h3>
+                <div id="filter">
+                </div>
 
-                        <h2>Features</h2>
-                        <div id="features">
-                            <div id="danceability_plot" class="half_plot"></div>
-                            <div id="energy_plot" class="half_plot"></div>
-                            <br>
-                            <div id="key_plot" class="half_plot"></div>
-                            <div id="loudness_plot" class="half_plot"></div>
-                            <br>
-                            <div id="mode_plot" class="full_plot"></div>
-                            <br>
-                            <div id="speechiness_plot" class="half_plot"></div>
-                            <div id="acousticness_plot" class="half_plot"></div>
-                            <br>
-                            <div id="instrumentalness_plot" class="half_plot"></div>
-                            <div id="liveness_plot" class="half_plot"></div>
-                            <br>
-                            <div id="valence_plot" class="half_plot"></div>
-                            <div id="tempo_plot" class="half_plot"></div>
-                        </div>
-                    </td>
-                </tr>
-            </table>
-        </article>
+                <h3>Playlist Creation</h3>
+                <div id="playlist">
+                    Load some tracks and apply some filters in order to generate a playist!
+                </div>
+
+                <h3>Features</h3>
+                <div id="features">
+                    <div id="danceability_plot" class="half_plot"></div>
+                    <div id="energy_plot" class="half_plot"></div>
+                    <br>
+                    <div id="key_plot" class="half_plot"></div>
+                    <div id="loudness_plot" class="half_plot"></div>
+                    <br>
+                    <div id="mode_plot" class="full_plot"></div>
+                    <br>
+                    <div id="speechiness_plot" class="half_plot"></div>
+                    <div id="acousticness_plot" class="half_plot"></div>
+                    <br>
+                    <div id="instrumentalness_plot" class="half_plot"></div>
+                    <div id="liveness_plot" class="half_plot"></div>
+                    <br>
+                    <div id="valence_plot" class="half_plot"></div>
+                    <div id="tempo_plot" class="half_plot"></div>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>

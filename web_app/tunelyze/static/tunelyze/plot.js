@@ -1,3 +1,10 @@
+const margin = {
+    t: 45,
+    r: 20,
+    b: 30,
+    l: 30,
+}
+
 function histogram_trace(data, min, max, tick_spacing) {
     return {
         type: 'histogram',
@@ -14,7 +21,7 @@ function histogram_trace(data, min, max, tick_spacing) {
                 width: 1.0
             }
         }
-    };
+    }
 }
 
 function plot_histogram(feature_name, traces, min, max, tick_spacing) {
@@ -38,26 +45,21 @@ function plot_histogram(feature_name, traces, min, max, tick_spacing) {
             tickwidth: 1,
             showline: true,
         },
-        margin: {
-            t: 45,
-            r: 10,
-            b: 30,
-            l: 30,
-        },
-    }, {displayModeBar: false});
+        margin: margin,
+    }, {displayModeBar: false})
 }
 
 function filtered_histogram(feature_name, filtered_feature_values, feature_values, min, max, tick_spacing) {
     plot_histogram(feature_name, [
         histogram_trace(feature_values[feature_name], min, max, tick_spacing),
         histogram_trace(filtered_feature_values[feature_name], min, max, tick_spacing)
-    ], min, max, tick_spacing);
+    ], min, max, tick_spacing)
 }
 
 function histogram(feature_name, feature_values, min, max, tick_spacing) {
     plot_histogram(feature_name, [
         histogram_trace(feature_values[feature_name], min, max, tick_spacing),
-    ], min, max, tick_spacing);
+    ], min, max, tick_spacing)
 }
 
 
@@ -65,7 +67,7 @@ function histogram(feature_name, feature_values, min, max, tick_spacing) {
 function bar_trace(feature_name, features, categories) {
     values = []
     for (var i = 0; i < categories.length; i++) {
-        values[i] = 0;
+        values[i] = 0
     }
     for (var i = 0; i < features[feature_name].length; i++) {
         values[categories.indexOf(features[feature_name][i])] += 1
@@ -101,13 +103,8 @@ function plot_bar(feature_name, traces) {
             tickwidth: 1,
             showline: true,
         },
-        margin: {
-            t: 45,
-            r: 10,
-            b: 30,
-            l: 30,
-        }
-    }, {displayModeBar: false});
+        margin: margin
+    }, {displayModeBar: false})
 }
 
 function filtered_bar(feature_name, filtered_feature_values, feature_values, categories) {
@@ -128,7 +125,7 @@ function bar(feature_name, feature_values, categories) {
 function pie_trace(feature_name, features, categories, name, col) {
     values = []
     for (var i = 0; i < categories.length; i++) {
-        values[i] = 0;
+        values[i] = 0
     }
     for (var i = 0; i < features[feature_name].length; i++) {
         values[categories.indexOf(features[feature_name][i])] += 1
@@ -144,7 +141,7 @@ function pie_trace(feature_name, features, categories, name, col) {
             row: 0,
             column: col
         },
-    };
+    }
 }
 
 function plot_pie(num, feature_name, traces) {
@@ -152,14 +149,9 @@ function plot_pie(num, feature_name, traces) {
     {
         title: feature_name,
         showlegend: false,
-        margin: {
-            t: 45,
-            r: 10,
-            b: 30,
-            l: 30,
-        },
+        margin: margin,
         grid: {rows: 1, columns: num}
-    }, {displayModeBar: false});
+    }, {displayModeBar: false})
 }
 
 function filtered_pie(feature_name, filtered_features, features, categories) {

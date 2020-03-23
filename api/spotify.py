@@ -82,7 +82,13 @@ class SpotifyClient(object):
                 tracks.add(track)
 
         for album_id in album_ids:
+            spotipy_album = self.sp.album(album_id)
+            art_url = ""
+            if len(spotipy_album['images']) != 0:
+                art_url = spotipy_album['images'][0]['url']
+                
             for track in self.get_album_tracks(album_id):
+                track.art_url = art_url
                 tracks.add(track)
 
         for playlist_id in playlist_ids:
@@ -95,7 +101,7 @@ class SpotifyClient(object):
         return self._get(50, self.sp.current_user_saved_tracks, lambda result_item : Track(result_item['track']))
 
     def get_album_tracks(self, album_id):
-        return self._get(50, lambda limit, offset : self.sp.album_tracks(album_id, limit=limit, offset=offset), lambda result_item : Track(result_item))
+        return self._get(50, lambda limit, offset : self.sp.album_tracks(album_id, limit=limit, offset=offset), lambda result_item : Track(result_item, ""))
 
     def get_playlist_tracks(self, playlist_id):
         return self._get(50, lambda limit, offset : self.sp.playlist_tracks(playlist_id, limit=limit, offset=offset), lambda result_item : Track(result_item['track']))
@@ -157,6 +163,10 @@ class Album(object):
     def __init__(self, spotipy_album):
         self.name = spotipy_album['name']
         self.id = spotipy_album['id']
+        if len(spotipy_album['images']) != 0:
+            self.art_url = spotipy_album['images'][0]['url']
+        else:
+            self.art_url = ""
         self.artists = [Artist(spotipy_artist) for spotipy_artist in spotipy_album['artists']]
     
     def __str__(self):
@@ -168,6 +178,7 @@ class Album(object):
 
             'name':         self.name,
             'id':           self.id,
+            'art_url':      self.art_url,
             'artists':      [artist.to_dict() for artist in self.artists],
             'artists_str':  utils.get_english_list([artist.name for artist in self.artists])
         }
@@ -179,6 +190,11 @@ class Playlist(object):
     def __init__(self, spotipy_playlist):
         self.name = spotipy_playlist['name']
         self.id = spotipy_playlist['id']
+        if len(spotipy_playlist['images']) != 0:
+            self.art_url = spotipy_playlist['images'][0]['url']
+        else:
+            self.art_url = ""
+        self.owner = spotipy_playlist['owner']['display_name']
         self.collab = spotipy_playlist
 
     def __str__(self):
@@ -190,13 +206,20 @@ class Playlist(object):
 
             'name':     self.name,
             'id':       self.id,
+            'art_url':  self.art_url,
+            'owner':    self.owner,
             'collab':   self.collab
         }
 
 class Track(object):
-    def __init__(self, spotipy_track):
+    def __init__(self, spotipy_track, art_url = None):
         self.name = spotipy_track['name']
         self.id = spotipy_track['id']
+        if art_url == None:
+            if len(spotipy_track['album']['images']) != 0:
+                self.art_url = spotipy_track['album']['images'][0]['url']
+            else:
+                self.art_url = ""
         self.artists = [Artist(spotipy_artist) for spotipy_artist in spotipy_track['artists']]
         self.features = None
 
@@ -254,6 +277,7 @@ class Track(object):
 
             'name':         self.name,
             'id':           self.id,
+            'art_url':      self.art_url,
             'artists':      [artist.to_dict() for artist in self.artists],
             'artists_str':  utils.get_english_list([artist.name for artist in self.artists]),
             'features':     None if self.features == None else self.features.to_dict()
