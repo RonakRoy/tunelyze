@@ -18,34 +18,81 @@ $(document).ready(function() {
     }
 
     for (var i = 0; i < feature_types.length; i++) {
-        var feature = feature_types[i]
-        var feature_def = feature_defs[feature]
+        const feature = feature_types[i]
+        const feature_def = feature_defs[feature]
 
         if (feature_def.type == "range") {
+            const min_val = feature_def.min
+            const max_val = feature_def.max
+
             $("#filter").append(
-                "<div>" +
-                    "<input type='checkbox' id='use_" + feature + "_filter' class='filter' /> <b>" + feature + "</b> &nbsp &nbsp &nbsp &nbsp" +
-                    "min: <input type='text' id='" + feature + "_min' value='" + feature_def.min + "' /> &nbsp &nbsp" +
-                    "max: <input type='text' id='" + feature + "_max' value='" + feature_def.max + "' />" + 
+                "<div class='filter_block' id='" + feature + "_block'>" + 
+                    "<div class='slider_block'>" +
+                        "<div class='slider_text'>" + 
+                            "<div class='min slider_label' id='" + feature + "_min'>" + min_val +"</div>" + 
+                            "<div style='flex: 1 0 auto'>" + 
+                                "<div class='switch' id='use_" + feature + "_filter'>" +
+                                    "<span class='knob'></span>" + 
+                                "</div>" +
+                                "<div class='title'>" +
+                                    "<b>" + feature + "</b>" +
+                                "</div>" + 
+                            "</div>" + 
+                            "<div class='max slider_label' id='" + feature + "_max'>" + max_val +"</div>" + 
+                        "</div>" + 
+                        "<div class='slider' id='" + feature + "_slider'></div>" + 
+                    "</div>" +
                 "</div>"
             )
+
+            $("#use_" + feature + "_filter").click(function() {
+                $(this).toggleClass("on")
+                $("#"+feature+"_block").toggleClass("on")
+            })
+
+            $("#" + feature + "_slider").slider({
+                range: true,
+                min: feature_def.min,
+                max: feature_def.max,
+                step: feature_def.tick_spacing / 5,
+                values: [feature_def.min, feature_def.max],
+                slide: function(event, ui) {
+                    $("#" + feature + "_min").html(ui.values[0])
+                    $("#" + feature + "_max").html(ui.values[1])
+                }
+            })
         }
         else if (feature_def.type == "discrete") {
             var in_checks = ""
             var options = feature_def.options
             for (var j = 0; j < options.length; j++) {
-                in_checks +=  "<input type='checkbox' class='" + feature + "_options' id='" + feature + "_" + options[j] + "' class='filter' /> " + options[j] + " &nbsp &nbsp"
+                in_checks +=  "<div style='display: inline-block; margin: 0px 4px'><input type='checkbox' class='" + feature + "_options' id='" + feature + "_" + options[j] + "' class='filter'> " + options[j] + "</div>"
             }
 
             $("#filter").append(
-                "<div>" +
-                    "<input type='checkbox' id='use_" + feature + "_filter' class='filter' /> <b>" + feature + "</b> &nbsp &nbsp &nbsp &nbsp" +
-                    in_checks + 
+                "<div class='filter_block' id='" + feature + "_block'>" + 
+                    "<div class='picker_block'>" +
+                        "<div style='display: flex; align-items: center; margin-bottom: 4px'>" +
+                            "<div class='switch' id='use_" + feature + "_filter'>" +
+                                "<span class='knob'></span>" + 
+                            "</div>" +
+                            "<div class='title'>" +
+                                "<b>&nbsp" + feature + "</b>" +
+                            "</div>" + 
+                        "</div>" + 
+                        "<div>" +
+                            in_checks +
+                        "</div>" + 
+                    "</div>" +
                 "</div>"
             )
+
+            $("#use_" + feature + "_filter").click(function() {
+                $(this).toggleClass("on")
+                $("#"+feature+"_block").toggleClass("on")
+            })
         }
     }
-    $("#filter").append("<button id='apply_filters'>Apply Filters</button>")
 
     function process_features(tracks) {
         var feature_values = {}
@@ -178,13 +225,13 @@ $(document).ready(function() {
             var feature = feature_types[i]
             var feature_def = feature_defs[feature]
 
-            if ($("#use_" + feature + "_filter").prop('checked') == false) {
+            if ($("#use_" + feature + "_filter").hasClass('on') == false) {
                 continue
             }
 
             if (feature_def.type == 'range') {
-                min_val = $("#" + feature + "_min").prop('value')
-                max_val = $("#" + feature + "_max").prop('value')
+                min_val = $("#" + feature + "_min").html()
+                max_val = $("#" + feature + "_max").html()
 
                 for (var j = 0; j < filtered_tracks.length; j++) {
                     var track = filtered_tracks[j]

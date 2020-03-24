@@ -9,6 +9,10 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="/resources/demos/style.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
     <script src="{% static 'tunelyze/plot.js' %}"></script>
     <script src="{% static 'tunelyze/app.js' %}"></script>
 
@@ -38,8 +42,8 @@
             overflow-x: scroll;
 
             display: grid;
-            grid-template-columns: 348px 304px auto;
-            grid-template-rows: auto auto minmax(0, 1fr);
+            grid-template-columns: 348px 304px minmax(700px, 1fr);
+            grid-template-rows: auto auto minmax(0px, 1fr);
             grid-template-areas:
               "sources_header tracks_header filviz_header"
               "sources tracks_button filviz"
@@ -53,7 +57,7 @@
         .main_content>.column {
             padding: 0px 24px 24px;
 
-            overflow: scroll;
+            overflow-y: scroll;
         }
         
         body>.header {
@@ -209,14 +213,166 @@
 
         .half_plot {
             display: inline-block;
-            /* max-width: 400px; */
-            /* max-height: 300px; */
+            max-width: 600px;
+            max-height: 380px;
+
+            margin-top: 24px;
         }
 
         .full_plot {
             display: inline-block;
-            /* max-width: 800px; */
-            /* max-height: 300px; */
+            max-width: 1200px;
+            max-height: 380px;
+
+            margin-top: 24px;
+        }
+
+        .filter_list {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .filter_block {
+            flex: 0 0 500px;
+            height: 100px;
+            max-height: 100px;
+            margin: 0px 12px 12px 0px;
+
+            border-radius: 12px;
+            background: rgba(0,0,0,.25);
+
+                    transition: .4s;
+            -webkit-transition: .4s;
+               -moz-transition: .4s;
+                -ms-transition: .4s;
+                 -o-transition: .4s;
+        }
+
+        .filter_block.on {
+            background: #1B263B;
+        }
+
+        .filter_block .title {
+            font-size: 18px;
+        }
+
+        .picker_block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            text-align: center;
+            padding: 8px;
+        }
+
+        .slider_block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            text-align: center;
+
+            padding: 8px 18px 12px;
+        }
+
+        .slider_block .title {
+            padding-top: 4px;
+        }
+
+        .slider_text {
+            display: flex;
+            width: 100%;
+
+            align-items: flex-end;
+            margin-bottom: 12px;
+        }
+
+        .slider_label {
+            flex: 0 0 64px;
+        }
+
+        .slider_label.min {
+            text-align: left;
+        }
+
+        .slider_label.max {
+            text-align: right;
+        }
+
+        .slider {
+            display: inline-block;
+            width: 100%;
+        }
+
+        .slider.ui-slider {
+            border: 0px;
+        }
+
+        .slider .ui-slider-handle:hover {
+            cursor: ew-resize;
+        }
+
+        .filter_block    .slider_block .slider .ui-widget-header {
+            background: #8f8f8f;
+
+                    transition: background .4s;
+            -webkit-transition: background .4s;
+               -moz-transition: background .4s;
+                -ms-transition: background .4s;
+                 -o-transition: background .4s;
+        }
+
+        .filter_block.on .slider_block .slider .ui-widget-header {
+            background: #778DA9;
+        }
+
+        .knob {
+            position: absolute;
+            top: 2px;
+            bottom: 2px;
+            left: 2px;
+            right: auto;
+
+            width: 20px;
+
+            background-color: #ccc;
+            border-radius: 20px;
+
+                    transition: .4s;
+            -webkit-transition: .4s;
+               -moz-transition: .4s;
+                -ms-transition: .4s;
+                 -o-transition: .4s;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 24px;
+
+            background-color: #888;
+            border-radius: 20px;
+
+            cursor: pointer;
+
+                    transition: .4s;
+            -webkit-transition: .4s;
+               -moz-transition: .4s;
+                -ms-transition: .4s;
+                 -o-transition: .4s;
+        }
+
+        .switch.on {
+            background-color: #415A77;
+        }
+
+        .switch.on>.knob {
+                    transform: translateX(16px);
+            -webkit-transform: translateX(16px);
+               -moz-transform: translateX(16px);
+                -ms-transform: translateX(16px);
+                 -o-transform: translateX(16px);
         }
 
         a {
@@ -306,11 +462,13 @@
         <div style="grid-area: filviz_header" class="header">
             <h2>Filter and Visualize</h2>
         </div>
-        <div style="grid-area: filviz" class="column">
+        <div style="grid-area: filviz;" class="column">
             <div class="scrollable">
-                <h3>Filter</h3>
-                <div id="filter">
+                <h3>Filters</h3>
+                <div class="filter_list" id="filter">
                 </div>
+                <button id='apply_filters'>Apply Filters</button>
+
 
                 <h3>Playlist Creation</h3>
                 <div id="playlist">
@@ -325,7 +483,8 @@
                     <div id="key_plot" class="half_plot"></div>
                     <div id="loudness_plot" class="half_plot"></div>
                     <br>
-                    <div id="mode_plot" class="full_plot"></div>
+                    <div id="mode_plot" class="half_plot"></div>
+                    <div id="filtered_mode_plot" class="half_plot"></div>
                     <br>
                     <div id="speechiness_plot" class="half_plot"></div>
                     <div id="acousticness_plot" class="half_plot"></div>
