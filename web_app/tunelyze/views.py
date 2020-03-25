@@ -44,10 +44,8 @@ def auth_success(request):
         return HttpResponseRedirect('/tunelyze/auth/')
     sp = ret_val
 
-    current_user = sp.sp.current_user()
-    display_name = current_user['display_name']
-    name = display_name if display_name != "" else current_user['id']
-    return render(request, 'tunelyze/auth_success.html', {'name': name})
+    current_user = sp.get_current_user()
+    return render(request, 'tunelyze/auth_success.html', {'name': current_user.name, 'icon_url': current_user.icon_url})
 
 def auth_fail(request):
     return render(request, 'tunelyze/auth_fail.html', {})

@@ -60,6 +60,9 @@ class SpotifyClient(object):
             if total == None:
                 total = results['total']
 
+    def get_current_user(self):
+        return User(self.sp.current_user())
+
     def get_playlists(self):
         playlists = []
         for playlist in self._get(50, self.sp.current_user_playlists, lambda result_item : Playlist(result_item)):
@@ -140,6 +143,13 @@ class SpotifyClient(object):
 
         return pl['id']
 
+class User(object):
+    def __init__(self, spotipy_user):
+        self.name = spotipy_user['display_name'] if 'display_name' in spotipy_user else current_user['id']
+        self.icon_url = ""
+        if len(spotipy_user['images']) != 0:
+            self.icon_url = spotipy_user['images'][0]['url']
+
 class Artist(object):
     def __init__(self, spotipy_artist):
         self.name = spotipy_artist['name']
@@ -163,10 +173,7 @@ class Album(object):
     def __init__(self, spotipy_album):
         self.name = spotipy_album['name']
         self.id = spotipy_album['id']
-        if len(spotipy_album['images']) != 0:
-            self.art_url = spotipy_album['images'][0]['url']
-        else:
-            self.art_url = ""
+        self.art_url = spotipy_album['images'][0]['url'] if len(spotipy_album['images']) != 0 else ""
         self.artists = [Artist(spotipy_artist) for spotipy_artist in spotipy_album['artists']]
     
     def __str__(self):
@@ -190,10 +197,7 @@ class Playlist(object):
     def __init__(self, spotipy_playlist):
         self.name = spotipy_playlist['name']
         self.id = spotipy_playlist['id']
-        if len(spotipy_playlist['images']) != 0:
-            self.art_url = spotipy_playlist['images'][0]['url']
-        else:
-            self.art_url = ""
+        self.art_url = spotipy_playlist['images'][0]['url'] if len(spotipy_playlist['images']) != 0 else ""
         self.owner = spotipy_playlist['owner']['display_name']
         self.collab = spotipy_playlist
 
@@ -216,10 +220,7 @@ class Track(object):
         self.name = spotipy_track['name']
         self.id = spotipy_track['id']
         if art_url == None:
-            if len(spotipy_track['album']['images']) != 0:
-                self.art_url = spotipy_track['album']['images'][0]['url']
-            else:
-                self.art_url = ""
+            self.art_url = spotipy_track['album']['images'][0]['url'] if len(spotipy_track['album']['images']) != 0 else ""
         self.artists = [Artist(spotipy_artist) for spotipy_artist in spotipy_track['artists']]
         self.features = None
 

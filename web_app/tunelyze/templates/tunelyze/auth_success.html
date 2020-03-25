@@ -108,6 +108,11 @@
             background: black;
         }
 
+        img.user_icon {
+            width: 60px;
+            height: 60px;
+        }
+
         .source {
             color: #b5b7ae;
             background: rgba(0,0,0,.25);
@@ -379,6 +384,24 @@
                  -o-transform: translateX(16px);
         }
 
+        .plist_gen {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.0;
+        }
+
+        .plist_gen input {
+            color: #E0E1DD;
+            font-size: 18px;
+            font-family: inherit;
+            margin: 0px;
+            padding: 0px 8px;
+            height: 32px;
+
+            border: 0px;
+            background: rgba(0,0,0, 0.5)
+        }
+
         a {
             color: #E0E1DD;
         }
@@ -414,6 +437,17 @@
             border-radius: 19px;
         }
 
+        .button.inline {
+            width: auto;
+            display: inline-block;
+            font-size: 16px;
+            padding: 8px 16px;
+            text-align: center;
+            background: #1B263B;
+
+            border-radius: 16px;
+        }
+
         .button:hover {
             background: #415A77;
         }
@@ -435,10 +469,10 @@
         <div class="user_info">
             <span class="name">{{ name }}</span>
             <br>
-            <a href="">Not You?</a>
+            <a href="/tunelyze/">Not You?</a>
         </div>
         <div class="user_icon">
-            <img class="user_icon"></img>
+            <img class="user_icon" src="{{ icon_url }}"></img>
         </div>
     </div>
 
@@ -457,13 +491,31 @@
             </div>
 
             <h3>Saved Albums</h3>
-            <div id='all_albums' class='button small clickable hover_animate' style='margin-bottom: 12px;'>Select All</div>
+            <table style='margin-bottom: 12px; width:100%'>
+                <tr>
+                    <td width="50%">
+                        <div id='all_albums' class='button small clickable hover_animate'>all</div>
+                    </td>
+                    <td width="50%">
+                        <div id='clear_albums' class='button small clickable hover_animate'>clear</div>
+                    </td>
+                </tr>
+            </table>
             <div id="albums">
                 <i>Loading saved albums...</i><br><br>
             </div>
             
             <h3>Playlists</h3>
-            <div id='all_playlists' class='button small clickable hover_animate' style='margin-bottom: 12px;'>Select All</div>
+            <table style='margin-bottom: 12px; width:100%'>
+                <tr>
+                    <td width="50%">
+                        <div id='all_playlists' class='button small clickable hover_animate'>all</div>
+                    </td>
+                    <td width="50%">
+                        <div id='clear_playlists' class='button small clickable hover_animate'>clear</div>
+                    </td>
+                </tr>
+            </table>
             <div id="playlists">
                 <i>Loading playlists...</i><br><br>
             </div>
@@ -493,8 +545,13 @@
 
 
                 <h2>Playlist Generation</h2>
-                <div id="playlist">
+                <div id="playlist_prompt" style="font-size: 18px; margin-bottom: 4px;">
                     Load some tracks and apply filters to start generating playlists!
+                </div>
+                <div id="playlist" class="plist_gen" style="display:none;">
+                    Playlist Name: <input type='text' id='plist_name' />
+                    <div class="button inline clickable hover_animate" id='make_plist'>Create Playlist</div><br><br>
+                    <div id='plist_result' style="font-weight: 400;"></div>
                 </div>
 
                 <h2 id="charts_header">Feature Charts</h2>

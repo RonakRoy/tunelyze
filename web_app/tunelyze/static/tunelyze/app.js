@@ -5,9 +5,21 @@ $(document).ready(function() {
         })
     })
 
+    $("#clear_albums").click(function() {
+        $(".album").each(function(index) {
+            $(this).removeClass("selected")
+        })
+    })
+
     $("#all_playlists").click(function() {
         $(".playlist").each(function(index) {
             $(this).addClass("selected")
+        })
+    })
+
+    $("#clear_playlists").click(function() {
+        $(".playlist").each(function(index) {
+            $(this).removeClass("selected")
         })
     })
 
@@ -125,6 +137,12 @@ $(document).ready(function() {
         return feature_values
     }
 
+    var tracks
+    var feature_values
+
+    var filtered_tracks
+    var filtered_feature_values
+
     //=======================================\\
     //======== Loading Track Sources ========\\
     //=======================================\\
@@ -172,8 +190,6 @@ $(document).ready(function() {
     //========================================\\
     //============= Track Loader =============\\
     //========================================\\
-    var tracks
-    var feature_values
     $("#load_tracks").click(function() {
         saved = $("#saved").hasClass('selected')
 
@@ -225,7 +241,11 @@ $(document).ready(function() {
                     }
                 }
 
-                $("#filviz .scrollable").scrollTop(800);
+                filtered_tracks = []
+                filtered_feature_values = []
+
+                $("#playlist_prompt").html("Apply some filters to start generating playlists!")
+                $("#playlist").css("display", "none")
             }
         })
     })
@@ -233,7 +253,6 @@ $(document).ready(function() {
     //========================================\\
     //============ Filter Applier ============\\
     //========================================\\
-    var filtered_tracks
     $("#apply_filters").click(function() {
         filtered_tracks = tracks.slice()
         var track_buffer = []
@@ -305,18 +324,21 @@ $(document).ready(function() {
             }
         }
 
-        $("#playlist").html(
-            "Playlist Name: <input type='text' id='plist_name' /> <button id='make_plist'>Create Playlist</button>" +
-            "<div id='plist_result'></div>"
-        )
+        $("#playlist_prompt").html("Of the original <b>" + tracks.length + " tracks,</b> your filters produced <b>"  + filtered_tracks.length + " tracks.</b>");
+        $("#playlist").css("display", "block");
 
         //========================================\\
         //=========== Playlist Creator ===========\\
         //========================================\\
         $("#make_plist").click(function() {
-            $("#plist_result").html("<i>Creating...</i>")
-
             name = $("#plist_name").prop('value')
+
+            if (name == "") {
+                $("#plist_result").html("ERROR: Your playlist needs a name!")
+                return
+            }
+            $("#plist_result").html("<i>Creating playlist </i>" + name + "<i>...</i>")
+
             track_ids = ""
             for (var i = 0; i < filtered_tracks.length; i++) {
                 track_ids += filtered_tracks[i]['id'] + ","
@@ -325,7 +347,7 @@ $(document).ready(function() {
             $.ajax({url: "../make_playlist/?name=" + name + "&tracks=" + track_ids,
                 error: onError,
                 success: function(result) {
-                    $("#plist_result").html("Your playlist has been created! View <a href='https://open.spotify.com/playlist/" + result['id'] + "'>" + name + " on Spotify.</a>")
+                    $("#plist_result").html("Your playlist has been created! View <a target='_blank' href='https://open.spotify.com/playlist/" + result['id'] + "'>" + name + " on Spotify.</a>")
                 }
             })
         })
@@ -342,7 +364,7 @@ $(window).resize(function() {
 
 function onError(jqXHR, textStatus, errorThrown) {
     if (jqXHR.responseText == "Spotify authorization failed.") {
-        const response = confirm("Unfornutantely, tunelyze lost Spotify authorization in your browser. Click OK to reload the page.")
+        const response = confirm("Unfortunately, tunelyze lost Spotify authorization in your browser. Click OK to reload the page.")
 
         if (response == true) {
             location.reload(true)
