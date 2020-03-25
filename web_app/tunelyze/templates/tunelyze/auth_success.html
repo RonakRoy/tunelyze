@@ -10,7 +10,6 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <link rel="stylesheet" href="/resources/demos/style.css">
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
     <script src="{% static 'tunelyze/plot.js' %}"></script>
@@ -42,10 +41,10 @@
             overflow-x: scroll;
 
             display: grid;
-            grid-template-columns: 348px 304px minmax(700px, 1fr);
+            grid-template-columns: 348px 304px minmax(650px, 1fr);
             grid-template-rows: auto auto minmax(0px, 1fr);
             grid-template-areas:
-              "sources_header tracks_header filviz_header"
+              "sources_header tracks_header filviz"
               "sources tracks_button filviz"
               "sources tracks filviz";
         }
@@ -58,6 +57,10 @@
             padding: 0px 24px 24px;
 
             overflow-y: scroll;
+        }
+
+        .main_content>.column.fliviz h2 {
+            margin-top: 24px;
         }
         
         body>.header {
@@ -140,7 +143,7 @@
 
             margin-right: 8px;
 
-            filter: grayscale(1.0);
+            filter: grayscale(1.0) brightness(0.5);
 
                     border-radius: 4px;
             -webkit-border-radius: 4px;
@@ -204,11 +207,11 @@
         }
 
         .track.filtered_out {
-            color: #adadad;
+            color: #747474;
         }
 
         .track.filtered_out>.art {
-            filter: grayscale(1.0);
+            filter: grayscale(1.0) brightness(0.5);
         }
 
         .half_plot {
@@ -233,10 +236,11 @@
         }
 
         .filter_block {
-            flex: 0 0 500px;
+            flex: 1 1 500px;
             height: 100px;
             max-height: 100px;
-            margin: 0px 12px 12px 0px;
+            margin: 12px;
+            margin-top: 0px;
 
             border-radius: 12px;
             background: rgba(0,0,0,.25);
@@ -262,7 +266,7 @@
             align-items: center;
 
             text-align: center;
-            padding: 8px;
+            padding: 8px 24px;
         }
 
         .slider_block {
@@ -391,20 +395,35 @@
             cursor: pointer;
         }
 
-        .hover_animate {
-                    transition: all 0.15s ease-out;
-            -webkit-transition: all 0.15s ease-out;
-               -moz-transition: all 0.15s ease-out;
-                -ms-transition: all 0.15s ease-out;
-                 -o-transition: all 0.15s ease-out;
+        .button {
+            width: 100%;
+            font-size: 20px;
+            padding: 12px 0px;
+            text-align: center;
+            background: #1B263B;
+
+            border-radius: 48px;
         }
 
-        .hover_animate:hover {
-                    transition: all 0.15s ease-out;
-            -webkit-transition: all 0.15s ease-out;
-               -moz-transition: all 0.15s ease-out;
-                -ms-transition: all 0.15s ease-out;
-                 -o-transition: all 0.15s ease-out;
+        .button.small {
+            font-size: 18px;
+            padding: 8px 0px;
+            text-align: center;
+            background: #1B263B;
+
+            border-radius: 19px;
+        }
+
+        .button:hover {
+            background: #415A77;
+        }
+
+        .hover_animate {
+                    transition: 0.15s;
+            -webkit-transition: 0.15s;
+               -moz-transition: 0.15s;
+                -ms-transition: 0.15s;
+                 -o-transition: 0.15s;
         }
     </style>
 </head>
@@ -438,13 +457,15 @@
             </div>
 
             <h3>Saved Albums</h3>
+            <div id='all_albums' class='button small clickable hover_animate' style='margin-bottom: 12px;'>Select All</div>
             <div id="albums">
-                <i>Loading saved albums...</i>
+                <i>Loading saved albums...</i><br><br>
             </div>
             
             <h3>Playlists</h3>
+            <div id='all_playlists' class='button small clickable hover_animate' style='margin-bottom: 12px;'>Select All</div>
             <div id="playlists">
-                <i>Loading playlists...</i>
+                <i>Loading playlists...</i><br><br>
             </div>
         </div>
 
@@ -459,23 +480,25 @@
             </div>
         </div>
 
-        <div style="grid-area: filviz_header" class="header">
+        <!-- <div style="grid-area: filviz_header" class="header">
             <h2>Filter and Visualize</h2>
-        </div>
-        <div style="grid-area: filviz;" class="column">
+        </div> -->
+        <div id="fliviz" style="grid-area: filviz;" class="column fliviz">
             <div class="scrollable">
-                <h3>Filters</h3>
+                <h2>Filters</h2>
                 <div class="filter_list" id="filter">
                 </div>
-                <button id='apply_filters'>Apply Filters</button>
+                <div id='apply_filters' class='button clickable hover_animate'>Apply Filters</div>
+                <!-- <button id='apply_filters'>Apply Filters</button> -->
 
 
-                <h3>Playlist Creation</h3>
+                <h2>Playlist Generation</h2>
                 <div id="playlist">
-                    Load some tracks and apply some filters in order to generate a playist!
+                    Load some tracks and apply filters to start generating playlists!
                 </div>
 
-                <h3>Features</h3>
+                <h2 id="charts_header">Feature Charts</h2>
+                <div id="feature_prompt">Load some tracks to view charts for their features!</div>
                 <div id="features">
                     <div id="danceability_plot" class="half_plot"></div>
                     <div id="energy_plot" class="half_plot"></div>

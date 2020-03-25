@@ -1,4 +1,16 @@
 $(document).ready(function() {
+    $("#all_albums").click(function() {
+        $(".album").each(function(index) {
+            $(this).addClass("selected")
+        })
+    })
+
+    $("#all_playlists").click(function() {
+        $(".playlist").each(function(index) {
+            $(this).addClass("selected")
+        })
+    })
+
     //========================================\\
     //==== Feature Filter Interface Setup ====\\
     //========================================\\
@@ -66,7 +78,7 @@ $(document).ready(function() {
             var in_checks = ""
             var options = feature_def.options
             for (var j = 0; j < options.length; j++) {
-                in_checks +=  "<div style='display: inline-block; margin: 0px 4px'><input type='checkbox' class='" + feature + "_options' id='" + feature + "_" + options[j] + "' class='filter'> " + options[j] + "</div>"
+                in_checks +=  "<div style='display: inline-block; margin: 0px 4px'><input type='checkbox' checked='true' class='" + feature + "_options' id='" + feature + "_" + options[j] + "' class='filter'> " + options[j] + "</div>"
             }
 
             $("#filter").append(
@@ -181,36 +193,41 @@ $(document).ready(function() {
         })
 
         $("#tracks").html("<div class='track'><i>Loading tracks...</i></div>")
-        $.ajax({url: "../get_tracks/?saved=" + saved + "&albums=" + album_ids + "&playlists=" + playlist_ids, success: function(result) {
-            $("#tracks").html("")
+        $.ajax({url: "../get_tracks/?saved=" + saved + "&albums=" + album_ids + "&playlists=" + playlist_ids,
+            error: onError,
+            success: function(result) {
+                $("#tracks").html("")
 
-            tracks = result["tracks"]
-            for (var i = 0; i < tracks.length; i++) {
-                $("#tracks").append(
-                    "<div class='track' id='" + tracks[i]["id"] + "'>" + 
-                        "<img class='art hover_animate' src='" + tracks[i]["art_url"] + "'></img>" +
-                        "<div><b>" + tracks[i]["name"] + "</b><br>" + tracks[i]["artists_str"] + "</div>" +
-                    "</div>"
-                )
+                tracks = result["tracks"]
+                for (var i = 0; i < tracks.length; i++) {
+                    $("#tracks").append(
+                        "<div class='track' id='" + tracks[i]["id"] + "'>" + 
+                            "<img class='art hover_animate' src='" + tracks[i]["art_url"] + "'></img>" +
+                            "<div><b>" + tracks[i]["name"] + "</b><br>" + tracks[i]["artists_str"] + "</div>" +
+                        "</div>"
+                    )
+                }
+                feature_values = process_features(tracks)
+
+                $("#feature_prompt").css("display", "none")
+                for (var i = 0; i < feature_types.length; i++) {
+                    var feature = feature_types[i]
+                    var feature_def = feature_defs[feature]
+
+                    if (feature_def.type == "range") {
+                        histogram(feature, feature_values, feature_def.min, feature_def.max, feature_def.tick_spacing)
+                    }
+                    else if (feature == 'key') {
+                        bar('key', feature_values, feature_def.options)
+                    }
+                    else if (feature == 'mode') {
+                        pie('mode', feature_values, feature_def.options)
+                    }
+                }
+
+                $("#filviz .scrollable").scrollTop(800);
             }
-            console.log("loaded haha")
-            feature_values = process_features(tracks)
-
-            for (var i = 0; i < feature_types.length; i++) {
-                var feature = feature_types[i]
-                var feature_def = feature_defs[feature]
-
-                if (feature_def.type == "range") {
-                    histogram(feature, feature_values, feature_def.min, feature_def.max, feature_def.tick_spacing)
-                }
-                else if (feature == 'key') {
-                    bar('key', feature_values, feature_def.options)
-                }
-                else if (feature == 'mode') {
-                    pie('mode', feature_values, feature_def.options)
-                }
-            }
-        }})
+        })
     })
 
     //========================================\\
@@ -305,9 +322,12 @@ $(document).ready(function() {
                 track_ids += filtered_tracks[i]['id'] + ","
             }
 
-            $.ajax({url: "../make_playlist/?name=" + name + "&tracks=" + track_ids, success: function(result) {
-                $("#plist_result").html("Your playlist has been created! View <a href='https://open.spotify.com/playlist/" + result['id'] + "'>" + name + " on Spotify.</a>")
-            }})
+            $.ajax({url: "../make_playlist/?name=" + name + "&tracks=" + track_ids,
+                error: onError,
+                success: function(result) {
+                    $("#plist_result").html("Your playlist has been created! View <a href='https://open.spotify.com/playlist/" + result['id'] + "'>" + name + " on Spotify.</a>")
+                }
+            })
         })
     })
 })
@@ -319,3 +339,16 @@ $("body").ready(function() {
 $(window).resize(function() {
     $("#main_content").css("max-height", $(window).height() - $("#header").height() - 48)
 })
+
+function onError(jqXHR, textStatus, errorThrown) {
+    if (jqXHR.responseText == "Spotify authorization failed.") {
+        const response = confirm("Unfornutantely, tunelyze lost Spotify authorization in your browser. Click OK to reload the page.")
+
+        if (response == true) {
+            location.reload(true)
+        }
+    }
+    else {
+        alert("An unknown error has occurred.")
+    }
+}

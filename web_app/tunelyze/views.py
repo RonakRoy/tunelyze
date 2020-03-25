@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponse, HttpResponseRedirect, HttpResponseServerError
 
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
@@ -39,21 +39,24 @@ def auth_callback(request):
         return HttpResponseRedirect('/tunelyze/login_failed/')
 
 def auth_success(request):
-    token_expries_at = request.session['token_expries_at']
-
-    if token_expries_at > time.time():
-        sp = SpotifyClient(request.session['access_token'])
-        display_name = sp.sp.current_user()['display_name']
-        name = display_name if display_name != "" else sp.sp.current_user()['id']
-        return render(request, 'tunelyze/auth_success.html', {'name': name})
-    else:
+    valid, ret_val = check_validity(request)
+    if not valid:
         return HttpResponseRedirect('/tunelyze/auth/')
+    sp = ret_val
+
+    current_user = sp.sp.current_user()
+    display_name = current_user['display_name']
+    name = display_name if display_name != "" else current_user['id']
+    return render(request, 'tunelyze/auth_success.html', {'name': name})
 
 def auth_fail(request):
     return render(request, 'tunelyze/auth_fail.html', {})
 
 def get_saved_albums(request):
-    sp = SpotifyClient(request.session['access_token'])
+    valid, ret_val = check_validity(request)
+    if not valid:
+        return ret_val
+    sp = ret_val
 
     albums = sp.get_saved_albums()
 
@@ -62,16 +65,22 @@ def get_saved_albums(request):
     })
 
 def get_playlists(request):
-    sp = SpotifyClient(request.session['access_token'])
+    valid, ret_val = check_validity(request)
+    if not valid:
+        return ret_val
+    sp = ret_val
 
-    albums = sp.get_playlists()
+    playlists = sp.get_playlists()
 
     return JsonResponse({
-        'playlists': api.utils.get_dict_list(albums)
+        'playlists': api.utils.get_dict_list(playlists)
     })
 
 def get_tracks(request):
-    sp = SpotifyClient(request.session['access_token'])
+    valid, ret_val = check_validity(request)
+    if not valid:
+        return ret_val
+    sp = ret_val
 
     saved_tracks = request.GET.get('saved') == "true"
 
@@ -89,7 +98,10 @@ def get_tracks(request):
     })
 
 def make_playlist(request):
-    sp = SpotifyClient(request.session['access_token'])
+    valid, ret_val = check_validity(request)
+    if not valid:
+        return ret_val
+    sp = ret_val
 
     name = request.GET.get('name')
 
@@ -101,3 +113,13 @@ def make_playlist(request):
     return JsonResponse({
         'id': str(plist_id)
     })
+
+def check_validity(request):
+    try:
+        token_expries_at = request.session['token_expries_at']
+        if token_expries_at < time.time():
+            raise Exception("Token expired. User needs to renew token or log in again.")
+        sp = SpotifyClient(request.session['access_token'])
+        return True, sp
+    except:
+        return False, HttpResponseServerError('Spotify authorization failed.')
