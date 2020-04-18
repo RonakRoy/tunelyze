@@ -6,7 +6,7 @@ import yaml
 import os
 import sys
 
-def get_oauth(config_file_path):
+def get_oauth(request, config_file_path):
     if os.path.isfile(config_file_path):
         with open(config_file_path, 'r') as config_stream:
             try:
@@ -24,7 +24,12 @@ def get_oauth(config_file_path):
 
     scope = 'user-library-read playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private'
 
-    sp_oauth = SpotifyOAuth(client_id, client_secret, redirect_uri,
-                            scope=scope, cache_path=".cache-spotipy")
+    cache_path = ".cache-spotipy-" + str(request.session.session_key)
+    try:
+        os.remove(cache_path)
+    except OSError:
+        pass
 
+    sp_oauth = SpotifyOAuth(client_id, client_secret, redirect_uri,
+                            scope=scope, cache_path=cache_path)
     return sp_oauth, redirect_uri

@@ -9,9 +9,9 @@ import time
 import sys
 sys.path.append('../')
 
-import web_utils
+import api.web as web_utils
 import api.spotify as spotify
-import api.utils
+import api.utils as utils
 from api.spotify import SpotifyClient
 
 # Create your views here.
@@ -19,13 +19,13 @@ def index(request):
     return render(request, 'tunelyze/index.html', {'message': 'Please connect to Spotify.'})
 
 def auth(request):
-    sp_oauth, redirect_uri = web_utils.get_oauth('config.yml')
+    sp_oauth, redirect_uri = web_utils.get_oauth(request, 'config.yml')
 
     auth_url = sp_oauth.get_authorize_url()
     return HttpResponseRedirect(auth_url)
 
 def auth_callback(request):
-    sp_oauth, redirect_uri = web_utils.get_oauth('config.yml')
+    sp_oauth, redirect_uri = web_utils.get_oauth(request, 'config.yml')
     token = "{}?{}".format(redirect_uri, request.GET.urlencode())
     code = sp_oauth.parse_response_code(token)
     token_info = sp_oauth.get_access_token(code)
@@ -59,7 +59,7 @@ def get_saved_albums(request):
     albums = sp.get_saved_albums()
 
     return JsonResponse({
-        'albums': api.utils.get_dict_list(albums)
+        'albums': utils.get_dict_list(albums)
     })
 
 def get_playlists(request):
@@ -71,7 +71,7 @@ def get_playlists(request):
     playlists = sp.get_playlists()
 
     return JsonResponse({
-        'playlists': api.utils.get_dict_list(playlists)
+        'playlists': utils.get_dict_list(playlists)
     })
 
 def get_tracks(request):
@@ -92,7 +92,7 @@ def get_tracks(request):
     sp.load_features(tracks)
 
     return JsonResponse({
-        'tracks': api.utils.get_dict_list(tracks)
+        'tracks': utils.get_dict_list(tracks)
     })
 
 def make_playlist(request):

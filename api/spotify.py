@@ -145,7 +145,7 @@ class SpotifyClient(object):
 
 class User(object):
     def __init__(self, spotipy_user):
-        self.name = spotipy_user['display_name'] if 'display_name' in spotipy_user else current_user['id']
+        self.name = spotipy_user['display_name'] if 'display_name' in spotipy_user else spotipy_user['id']
         self.icon_url = ""
         if len(spotipy_user['images']) != 0:
             self.icon_url = spotipy_user['images'][0]['url']
