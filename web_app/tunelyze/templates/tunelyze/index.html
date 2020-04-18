@@ -3,13 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <title>tunelyze</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #0D1B2A;
+            color: #E0E1DD;
+
+            margin: 0px;
+            padding: 72px;
+
+            overflow: hidden;
+
+            font-family: "Montserrat", "Helvetica", "Arial", sans-serif;
+        }
+
+        .container {
+            margin: 0px auto;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 72px;
+            font-weight: 700;
+        }
+
+        .prompt {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .button {
+            width: 100%;
+            font-size: 20px;
+            padding: 12px 0px;
+            text-align: center;
+            background: #1B263B;
+
+            border-radius: 48px;
+        }
+
+        .how {
+            font-size: 24px;
+        }
+
+        h1, h2 {
+            margin-bottom: 4px;
+        }
+
+        a {
+            color: #E0E1DD;
+            text-decoration: none;
+        }
+
+        .button:hover {
+            background: #415A77;
+        }
+
+        .hover_animate {
+                    transition: 0.15s;
+            -webkit-transition: 0.15s;
+               -moz-transition: 0.15s;
+                -ms-transition: 0.15s;
+                 -o-transition: 0.15s;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <article id="main">
-            {{ message }}
-            <a href="{% url 'auth' %}">Sign In</a>
-        </article>
+        <div class="logo">
+            tunelyze
+        </div>
+        <div class="prompt">
+            Welcome to tunelyze! With tunelyze, you can learn more about your music by analyzing song features. Let's get started!
+            <br><br>
+            Before you get connected, make sure your browser is logged into Spotify account.
+        </div>
+        <a class="hover_animate button" href="{% url 'auth' %}">Connect to Spotify</a>
+        <!-- <div class="how">
+            <h2>How it works</h2>
+            1. Connect to Spotify
+            tunelyze works with Spotify to steal all your pers-I mean, get all of your music
+            2. Choose the tunes you'd like to elyze
+            You can include songs from your library, playlists, and saved albums
+            3. Visualize your music's features
+            If you like pretty graphs, you're in luck
+            3. Filter your music
+            Want to find your most danceable songs? How about the saddest? Using filters, you can find songs that meet all of your deepest desires
+            4. Make a playlist
+            Once you've curated the perfect filters for your music, you can generate your very own playlist featuring only songs that meet those filters
+        </div> -->
     </div>
 </body>
 </html>

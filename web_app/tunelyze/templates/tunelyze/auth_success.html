@@ -88,6 +88,7 @@
 
         h1, h2, h3, h4, h5, h6 {
             margin-bottom: 4px;
+            line-height: 1;
         }
 
         h1, h2 {
@@ -217,6 +218,10 @@
 
         .track.filtered_out>.art {
             filter: grayscale(1.0) brightness(0.5);
+        }
+
+        .filviz {
+            font-size: 18px;
         }
 
         .half_plot {
@@ -418,6 +423,10 @@
             cursor: pointer;
         }
 
+        .hidden {
+            display: none;
+        }
+
         .button {
             width: 100%;
             font-size: 20px;
@@ -525,7 +534,7 @@
             <h2>Tracks</h2>
         </div>
         <div style="grid-area: tracks_button">
-            <div class="load_tracks_button clickable hover_animate" id="load_tracks">Load tracks...</div>
+            <div class="load_tracks_button clickable hover_animate" id="load_tracks">Load tracks</div>
         </div>
         <div style="background: rgba(0,0,0,.75); grid-area: tracks; padding: 0px" class="column">
             <div class="track_list" id="tracks">
@@ -537,11 +546,18 @@
         </div> -->
         <div id="fliviz" style="grid-area: filviz;" class="column fliviz">
             <div class="scrollable">
-                <h2>Filters</h2>
-                <div class="filter_list" id="filter">
+                <div style="display: flex">
+                    <h2 style="flex: 1 0 auto">Filters</h2>
+                    <div class="button clickable inline hover_animate" style="margin: auto 0px 4px" id="showhide_filters">show</div>
                 </div>
-                <div id='apply_filters' class='button clickable hover_animate'>Apply Filters</div>
-                <!-- <button id='apply_filters'>Apply Filters</button> -->
+                <div id="filter_summary" style="font-size: 18px">
+                    No filters are currently enabled.
+                </div>
+                <div id="filter_picker" class="hidden">
+                    <div class="filter_list" id="filter">
+                    </div>
+                    <div id="apply_filters" class='button clickable hover_animate'>Apply Filters</div>
+                </div>
 
 
                 <h2>Playlist Generation</h2>
@@ -555,7 +571,7 @@
                 </div>
 
                 <h2 id="charts_header">Feature Charts</h2>
-                <div id="feature_prompt">Load some tracks to view charts for their features!</div>
+                <div id="feature_prompt" style="font-size: 18px">Load some tracks to view charts for their features!</div>
                 <div id="features">
                     <div id="danceability_plot" class="half_plot"></div>
                     <div id="energy_plot" class="half_plot"></div>

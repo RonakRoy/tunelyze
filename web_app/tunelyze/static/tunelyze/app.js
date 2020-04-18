@@ -23,6 +23,17 @@ $(document).ready(function() {
         })
     })
 
+    $("#showhide_filters").click(function() {
+        if ($("#filter_picker").hasClass("hidden")) {
+            $("#showhide_filters").html("hide");
+        }
+        else {
+            $("#showhide_filters").html("show");
+        }
+        $("#filter_picker").toggleClass("hidden")
+        $("#filter_summary").toggleClass("hidden")
+    })
+
     //========================================\\
     //==== Feature Filter Interface Setup ====\\
     //========================================\\
@@ -254,6 +265,8 @@ $(document).ready(function() {
     //============ Filter Applier ============\\
     //========================================\\
     $("#apply_filters").click(function() {
+        var summary = "The following filters are enabled: "
+
         filtered_tracks = tracks.slice()
         var track_buffer = []
 
@@ -264,6 +277,8 @@ $(document).ready(function() {
             if ($("#use_" + feature + "_filter").hasClass('on') == false) {
                 continue
             }
+
+            summary += "<b>" + feature + "</b> "
 
             if (feature_def.type == 'range') {
                 min_val = $("#" + feature + "_min").html()
@@ -277,6 +292,8 @@ $(document).ready(function() {
                         track_buffer.push(track)
                     }
                 }
+
+                summary += "is between " + min_val + " and " + max_val + ", "
             }
             else {
                 allowed_options = []
@@ -285,6 +302,8 @@ $(document).ready(function() {
                         allowed_options.push($(this).attr('id').substring(feature.length + 1))
                     }
                 })
+
+                summary += "is one of (" + allowed_options + "), "
 
                 for (var j = 0; j < filtered_tracks.length; j++) {
                     var track = filtered_tracks[j]
@@ -299,6 +318,19 @@ $(document).ready(function() {
             filtered_tracks = track_buffer.slice()
             track_buffer = []
         }
+
+        if (summary == "The following filters are enabled: ") {
+            summary = "No filters are currently enabled."
+        }
+        else {
+            summary = summary.slice(0,-2)
+        }
+        $("#filter_summary").html(summary)
+
+        $("#showhide_filters").html("show");
+
+        $("#filter_picker").addClass("hidden")
+        $("#filter_summary").removeClass("hidden")
 
         $('.track').each(function(index) {
             $(this).addClass('filtered_out')
