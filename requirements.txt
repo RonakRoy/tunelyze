@@ -1,4 +1,4 @@
-spotipy==2.9.0
+spotipy==2.22.1
 PyYAML==5.3
 Django==3.0.4
 matplotlib==3.2.0
